@@ -41,7 +41,7 @@ CareConnect ist eine innovative iOS-App, die Pflegekräfte und Patienten unterst
 
 ## Installation
 
-1. Xcode öffnen (Version 14 oder neuer empfohlen).  
+1. Xcode öffnen (Version 18 oder neuer empfohlen).  
 2. Das Projekt `CareConnect.xcodeproj` öffnen.  
 3. App auf einem Simulator oder iOS-Gerät starten.  
 
