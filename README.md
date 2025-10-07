@@ -1,4 +1,3 @@
-# iOS Abschlussprojekt
 # CareConnect
 
 CareConnect ist eine innovative iOS-App, die Pflegekräfte und Patienten unterstützt. Sie bietet eine zentrale Übersicht über Mitarbeitende und Patienten, erleichtert die Arbeitsplanung und steigert die Sicherheit und Qualität der Pflege.  
