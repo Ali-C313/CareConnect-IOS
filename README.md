@@ -66,8 +66,8 @@ CareConnect ist eine innovative iOS-App, die Pflegekräfte und Patienten unterst
 ## Kontakt
 
 Bei Fragen oder Feedback:  
-**E-Mail:** 
-**Website:**
+**LinkedIn: www.linkedin.com/in/ali-chehab-32a7a7364** 
+
 
 ---
 
