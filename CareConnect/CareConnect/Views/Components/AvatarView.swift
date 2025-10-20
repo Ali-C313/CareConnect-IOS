@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct AvatarView: View {
+    
     var initials: String
     var size: CGFloat = 48
     var body: some View {

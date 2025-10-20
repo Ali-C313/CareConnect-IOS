@@ -12,19 +12,19 @@ import Combine
 /// Steuert globale App-Zustände:
 /// - Login / Logout
 /// - Sprache
-/// - Benutzerstatus (online/offline/busy)
+/// - Benutzerstatus
 @MainActor
 final class AppStateViewModel: ObservableObject {
     
     @Published var isLoggedIn: Bool = false
     
-    /// Aktuell eingeloggter Benutzername
+    // Aktuell eingeloggter Benutzername
     @Published var currentUserName: String = "Unbekannt"
     
-    /// Aktuell ausgewählter Sprach-Code
+    // Aktuell ausgewählter Sprach-Code
     @Published var appLocale: Locale = .current
     
-    /// Mitarbeiterstatus (z. B. verfügbar, beschäftigt, offline)
+    // Mitarbeiterstatus
     @AppStorage("staffStatus") var staffStatusRaw: String = StaffStatus.available.rawValue
     
     var staffStatus: StaffStatus {
@@ -32,7 +32,7 @@ final class AppStateViewModel: ObservableObject {
         set { staffStatusRaw = newValue.rawValue }
     }
     
-    /// Firebase Logout
+    // Firebase Logout
     func logout() {
         do {
             try Auth.auth().signOut()

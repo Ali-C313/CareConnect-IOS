@@ -9,9 +9,11 @@
 import Foundation
 
 enum OrderState: String, Codable, CaseIterable, Identifiable {
+    
     case aktuell = "Aktuell"
     case offen = "Offen"
     case erledigt = "Erledigt"
+    
     var id: String { rawValue }
 }
 

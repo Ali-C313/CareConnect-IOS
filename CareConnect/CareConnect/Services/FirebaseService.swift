@@ -18,10 +18,10 @@ protocol FirebaseServiceType {
 }
 
 final class FirebaseLiveService: FirebaseServiceType {
-    private let db = Firestore.firestore()
-    private var employeesRef: CollectionReference { db.collection("employees") }
-    private var patientsRef: CollectionReference { db.collection("patients") }
-    private var ordersRef: CollectionReference { db.collection("orders") }
+    private let dataBase = Firestore.firestore()
+    private var employeesRef: CollectionReference { dataBase.collection("employees") }
+    private var patientsRef: CollectionReference { dataBase.collection("patients") }
+    private var ordersRef: CollectionReference { dataBase.collection("orders") }
 
     func fetchEmployees() async throws -> [Employee] {
         let s = try await employeesRef.getDocuments()
@@ -37,7 +37,7 @@ final class FirebaseLiveService: FirebaseServiceType {
     }
 }
 
-/// Mock-Daten exakt wie in deinen Screens; kein echter Netzwerkzugriff.
+// Mock-Daten
 final class FirebaseMockService: FirebaseServiceType {
     func fetchEmployees() async throws -> [Employee] {
         [

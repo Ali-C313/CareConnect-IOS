@@ -9,7 +9,9 @@
 import SwiftUI
 
 struct SearchBarView: View {
+    
     @State private var text: String = ""
+    
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass").foregroundColor(.white.opacity(0.9))

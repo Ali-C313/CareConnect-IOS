@@ -12,7 +12,7 @@ import FirebaseAuth
 @main
 struct CareConnectApp: App {
     
-    // AppStateViewModel – steuert globale Zustände wie Login, Sprache etc.
+    // AppStateViewModel steuert globale wie Login, Sprache etc.
     @StateObject private var appState = AppStateViewModel()
     
     // Dark Mode Einstellung aus den AppStorage lesen/speichern

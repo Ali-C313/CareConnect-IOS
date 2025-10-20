@@ -9,7 +9,9 @@
 import SwiftUI
 
 struct PDFCardView: View {
+    
     var fileName: String
+    
     var body: some View {
         VStack {
             RoundedRectangle(cornerRadius: 12)

@@ -9,6 +9,7 @@
 import Foundation
 
 struct Medication: Identifiable, Codable {
+    
     var id: String = UUID().uuidString
     var name: String
 }

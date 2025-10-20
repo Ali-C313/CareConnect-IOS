@@ -9,7 +9,9 @@ import SwiftUI
 
 // Zeigt und ändert  Mitarbeiterstatus
 struct StatusView: View {
+    
     @EnvironmentObject var appState: AppStateViewModel
+    
     @AppStorage("staffStatus") private var staffStatusRaw: String = StaffStatus.available.rawValue
     
     var body: some View {

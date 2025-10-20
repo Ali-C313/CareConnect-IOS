@@ -9,7 +9,7 @@
 import Foundation
 import SwiftUI
 
-/// Verfügbare Mitarbeiterstatus
+// Verfügbare Mitarbeiterstatus
 enum StaffStatus: String, CaseIterable, Identifiable, Codable {
     case available = "Verfügbar"
     case busy = "Beschäftigt"
@@ -17,7 +17,7 @@ enum StaffStatus: String, CaseIterable, Identifiable, Codable {
     
     var id: String { self.rawValue }
     
-    /// Icon pro Status
+    // Icon pro Status
     var icon: String {
         switch self {
         case .available: return "checkmark.circle.fill"

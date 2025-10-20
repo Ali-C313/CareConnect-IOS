@@ -105,7 +105,6 @@ struct AuthView: View {
     
     // MARK: - Firebase Login / Registrierung
     
-    /// Führt Login oder Registrierung über FirebaseAuth aus.
     private func handleAuthAction() async {
         guard !email.isEmpty, !password.isEmpty else {
             errorMessage = "Bitte E-Mail und Passwort eingeben."

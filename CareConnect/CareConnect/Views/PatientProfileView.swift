@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct PatientProfileView: View {
+    
     var patient: Patient
 
     var body: some View {
