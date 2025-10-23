@@ -5,33 +5,37 @@
 //  Created by Ali Chehab on 11.10.25.
 //
 
-
 import Foundation
 import SwiftUI
 
-// Verfügbare Mitarbeiterstatus
 enum StaffStatus: String, CaseIterable, Identifiable, Codable {
     case available = "Verfügbar"
-    case busy = "Beschäftigt"
-    case offline = "Offline"
-    
-    var id: String { self.rawValue }
-    
-    // Icon pro Status
-    var icon: String {
-        switch self {
-        case .available: return "checkmark.circle.fill"
-        case .busy: return "clock.fill"
-        case .offline: return "xmark.circle.fill"
-        }
-    }
-    
-    /// Farbe pro Status
+    case busy      = "Beschäftigt"
+    case pause     = "Pause"
+    case off       = "Frei"
+    case vacation  = "Urlaub"
+
+    var id: String { rawValue }
+
+    var displayName: String { rawValue }
+
     var color: Color {
         switch self {
         case .available: return .green
-        case .busy: return .orange
-        case .offline: return .red
+        case .busy:      return .orange
+        case .pause:     return .yellow
+        case .off:       return .gray
+        case .vacation:  return .blue
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .available: return "checkmark.circle.fill"
+        case .busy:      return "bolt.circle.fill"
+        case .pause:     return "pause.circle.fill"
+        case .off:       return "xmark.circle.fill"
+        case .vacation:  return "airplane.circle.fill"
         }
     }
 }

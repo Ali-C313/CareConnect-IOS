@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "D1F02740-7CD5-4E36-911D-434F29425927.PNG",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -12,7 +13,6 @@
           "value" : "dark"
         }
       ],
-      "filename" : "D1F02740-7CD5-4E36-911D-434F29425927.PNG",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

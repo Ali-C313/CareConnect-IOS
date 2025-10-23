@@ -5,16 +5,22 @@
 //  Created by Ali Chehab on 11.10.25.
 //
 
-
 import Foundation
+import FirebaseFirestore
 
 struct Employee: Identifiable, Codable {
-    
-    var id: String = UUID().uuidString
-    var name: String
-    var age: Int
+    @DocumentID var id: String?
+    var firstName: String
+    var lastName: String
     var role: String
-    var yearsInCompany: Double
-    var status: StaffStatus = .available
-    var avatarURL: String? = nil
+    var status: String?                  // z. B. "Verfügbar"
+    var email: String
+    var birthDate: Date?                 // neu
+    var profileImageURL: String?         // neu
+
+    var name: String { "\(firstName) \(lastName)" }
+
+    var staffStatusEnum: StaffStatus {
+        StaffStatus(rawValue: status ?? StaffStatus.available.rawValue) ?? .available
+    }
 }
