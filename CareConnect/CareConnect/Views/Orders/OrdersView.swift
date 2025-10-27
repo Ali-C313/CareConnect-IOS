@@ -31,13 +31,23 @@ struct OrdersView: View {
                     .padding(.top, 12)
 
                     ScrollView {
+                        let orders = vm.filteredOrders(selectedFilter)
                         LazyVStack(spacing: 16) {
-                            ForEach(vm.orders.filter { $0.state == selectedFilter }) { order in
-                                Button { selectedOrder = order } label: {
-                                    OrderCard(order: order)
-                                        .environmentObject(appState)
+                            if orders.isEmpty {
+                                ContentUnavailableView(
+                                    "Keine Aufträge",
+                                    systemImage: "doc.text.magnifyingglass",
+                                    description: Text("Erstelle einen neuen Auftrag mit dem + Button oben rechts.")
+                                )
+                                .padding(.top, 40)
+                            } else {
+                                ForEach(orders) { order in
+                                    Button { selectedOrder = order } label: {
+                                        OrderCard(order: order)
+                                            .environmentObject(appState)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                         .padding()
@@ -62,14 +72,26 @@ struct OrdersView: View {
                     .environmentObject(appState)
                     .presentationDetents([.medium, .large])
             }
-            .task { await vm.load() }
-            .sheet(item: Binding(get: {
-                selectedOrder.map { IdentifiableWrapper(value: $0) }
-            }, set: { wrap in
-                selectedOrder = wrap?.value
-            })) { wrap in
-                OrderDetailView(order: wrap.value)
-                    .environmentObject(appState)
+            .sheet(isPresented: Binding(get: {
+                selectedOrder != nil
+            }, set: { _ in
+                selectedOrder = nil
+            })) {
+                if let order = selectedOrder {
+                    OrderDetailView(order: order)
+                        .environmentObject(appState)
+                }
+            }
+            .onAppear {
+                vm.startListening()
+            }
+            .onDisappear {
+                vm.stopListening()
+            }
+            .alert("Fehler", isPresented: $vm.showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(vm.errorMessage ?? "Unbekannter Fehler")
             }
         }
     }

@@ -72,8 +72,9 @@ struct LoginView: View {
                     .padding(.horizontal)
                     .disabled(!isFormValid || viewModel.isLoading)
                     
-                    NavigationLink(destination: RegisterView(appState: appState),
-                                   isActive: $navigateToRegister) { EmptyView() }
+                    .navigationDestination(isPresented: $navigateToRegister) {
+                        RegisterView(appState: appState)
+                    }
                     
                     Button {
                         navigateToRegister = true

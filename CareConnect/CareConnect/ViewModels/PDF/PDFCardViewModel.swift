@@ -15,7 +15,9 @@ final class PDFCardViewModel: ObservableObject {
 
     private let repo: PDFStorageRepository
 
-    init(repo: PDFStorageRepository = FirebasePDFStorageRepository()) { self.repo = repo }
+    init(repo: PDFStorageRepository? = nil) {
+        self.repo = repo ?? FirebasePDFStorageRepository()
+    }
 
     func loadPDF(storagePath: String) async {
         do { localURL = try await repo.downloadPDF(at: storagePath) }

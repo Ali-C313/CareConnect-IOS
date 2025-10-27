@@ -1,5 +1,5 @@
 //
-//  SettingsView.swift
+//  EmployeeSettingsView.swift
 //  CareConnect
 //
 //  Created by Ali Chehab on 11.10.25.
@@ -8,7 +8,7 @@
 import SwiftUI
 import FirebaseAuth
 
-struct SettingsView: View {
+struct EmployeeSettingsView: View {
     @EnvironmentObject var appState: AppStateViewModel
     @State private var showEditProfile = false
 
@@ -70,6 +70,6 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    EmployeeSettingsView()
         .environmentObject(AppStateViewModel())
 }

@@ -14,10 +14,11 @@ final class EditProfileViewModel: ObservableObject {
     @Published var isSaving = false
     @Published var error: String?
 
-    private let employeeRepo: EmployeeRepository
+    nonisolated private let employeeRepo: EmployeeRepository
 
-    init(employee: Employee, employeeRepo: EmployeeRepository = FirebaseEmployeeRepository()) {
-        self.employee = employee; self.employeeRepo = employeeRepo
+    init(employee: Employee, employeeRepo: EmployeeRepository? = nil) {
+        self.employee = employee
+        self.employeeRepo = employeeRepo ?? FirebaseEmployeeRepository()
     }
 
     func save() async -> Bool {

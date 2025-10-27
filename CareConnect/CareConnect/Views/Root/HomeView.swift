@@ -22,24 +22,34 @@ struct HomeView: View {
 
                     // Kopf: Status + Suche
                     HStack(spacing: 12) {
-                        Button {
-                            withAnimation(.spring()) { showStatusPopup = true }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(appState.staffStatus.color)
-                                    .frame(width: 12, height: 12)
-                                Text(appState.staffStatus.rawValue)
-                                    .font(.headline)
-                                    .foregroundColor(CCDesign.textPrimary)
-                                Image(systemName: "chevron.up.chevron.down")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                        Picker(selection: $appState.staffStatus, label: HStack(spacing: 8) {
+                            Circle()
+                                .fill(appState.staffStatus.color)
+                                .frame(width: 12, height: 12)
+                            Text(appState.staffStatus.rawValue)
+                                .font(.headline)
+                                .foregroundColor(CCDesign.textPrimary)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(CCDesign.card.opacity(0.95))
+                        .cornerRadius(12)) {
+                            ForEach(StaffStatus.allCases) { st in
+                                HStack {
+                                    Circle()
+                                        .fill(st.color)
+                                        .frame(width: 12, height: 12)
+                                    Text(st.displayName)
+                                }
+                                .tag(st)
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(CCDesign.card.opacity(0.95))
-                            .cornerRadius(12)
+                        }
+                        .pickerStyle(.menu)
+                        .onChange(of: appState.staffStatus) {
+                            Task { await appState.updateCurrentStatus(appState.staffStatus) }
                         }
 
                         Spacer()
@@ -117,10 +127,6 @@ struct HomeView: View {
             }
             .navigationTitle("Home")
             .task { await appState.loadInitial() }
-            .sheet(isPresented: $showStatusPopup) {
-                StatusPopupView(showPopup: $showStatusPopup)
-                    .environmentObject(appState)
-            }
             .sheet(isPresented: $showSearchSheet) {
                 GlobalSearchView()
                     .environmentObject(appState)

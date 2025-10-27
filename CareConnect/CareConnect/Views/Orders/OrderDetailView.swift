@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
 
 struct OrderDetailView: View {
     let order: Order
@@ -39,7 +40,7 @@ struct OrderDetailView: View {
                     statusSection
 
                     // MARK: - Patientendaten
-                    if let patient = appState.patients.first(where: { $0.id == order.patientId }) {
+                    if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }) {
                         patientSection(patient)
                     }
 
@@ -68,7 +69,10 @@ struct OrderDetailView: View {
         .alert("Auftrag abschließen?", isPresented: $showCompletionAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("Bestätigen", role: .destructive) {
-                Task { await complete() }
+                Task {
+                    await complete()
+                    dismiss()
+                }
             }
         } message: { Text("Dieser Auftrag wird als erledigt markiert.") }
     }
@@ -87,7 +91,7 @@ struct OrderDetailView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(order.patientId.replacingOccurrences(of: "_", with: " "))
+                    Text(order.patientName)
                         .font(.title3.bold())
                         .foregroundColor(CCDesign.textPrimary)
                     Text("Patientenauftrag")
@@ -98,7 +102,7 @@ struct OrderDetailView: View {
             }
 
             if let notes = order.notes, !notes.isEmpty {
-                Text(notes)
+                Text(notes.joined(separator: ", "))
                     .font(.body)
                     .foregroundColor(CCDesign.textPrimary)
                     .multilineTextAlignment(.leading)
@@ -231,7 +235,6 @@ struct OrderDetailView: View {
             Task {
                 await action()
                 isProcessing = false
-                dismiss()
             }
         } label: {
             HStack(spacing: 10) {
@@ -286,12 +289,14 @@ struct OrderDetailView: View {
 
 #Preview {
     OrderDetailView(order: Order(
-        id: "demo1",
-        employeeId: "",
-        patientId: "pat_maria_schulz",
-        notes: "Kontrolle nach Medikamenteneinnahme und Puls messen.",
         state: .aktuell,
-        date: Date()
+        notes: ["Kontrolle nach Medikamenteneinnahme und Puls messen."],
+        description: "Kontrolle nach Medikamenteneinnahme",
+        patientName: "Maria Schulz",
+        createdBy: "DemoUser",
+        assignedTo: nil,
+        dueDate: Timestamp(date: Date().addingTimeInterval(3600)),
+        createdAt: Timestamp(date: Date())
     ))
     .environmentObject(AppStateViewModel())
 }

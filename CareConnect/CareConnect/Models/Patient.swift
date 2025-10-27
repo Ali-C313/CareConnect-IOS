@@ -16,7 +16,7 @@ struct Medication: Identifiable, Codable, Hashable {
 struct EmergencyContact: Identifiable, Codable, Hashable {
     var id: String = UUID().uuidString
     var name: String
-    var relation: String
+    var relation: String?
     var phone: String?
     var email: String?
     var address: String?
@@ -25,10 +25,15 @@ struct EmergencyContact: Identifiable, Codable, Hashable {
 
 struct Patient: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
-    var firstName: String
-    var lastName: String
-    var address: String
-    var phone: String
+    var uid: String? // Firebase User UID for matching Orders
+    var firstName: String?
+    var lastName: String?
+    var address: String?
+    var phone: String?
+    var email: String?
+    var allergies: String?
+    var medicalHistory: String?
+    var age: Int?
     var birthDate: Date?
     var notes: String?
     var profileImageURL: String?   // neu
@@ -36,19 +41,46 @@ struct Patient: Identifiable, Codable, Hashable {
     // UI-Zusatz
     var medications: [Medication] = []
     var history: [String] = []
+    var emergencyContact: EmergencyContact?
 
     // Computed
-    var name: String { "\(firstName) \(lastName)" }
+    var name: String { [firstName, lastName].compactMap { $0 }.joined(separator: " ") }
 
-    var city: String {
-        let parts = address.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-        return parts.last ?? ""
-    }
+    var city: String?
 
-    var age: Int {
-        guard let birthDate else { return 0 }
-        let calendar = Calendar.current
-        let ageComponents = calendar.dateComponents([.year], from: birthDate, to: Date())
-        return ageComponents.year ?? 0
+    init(
+        id: String? = nil,
+        firstName: String? = nil,
+        lastName: String? = nil,
+        address: String? = nil,
+        phone: String? = nil,
+        email: String? = nil,
+        allergies: String? = nil,
+        medicalHistory: String? = nil,
+        age: Int? = nil,
+        birthDate: Date? = nil,
+        notes: String? = nil,
+        profileImageURL: String? = nil,
+        medications: [Medication] = [],
+        history: [String] = [],
+        emergencyContact: EmergencyContact? = nil,
+        city: String? = nil
+    ) {
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+        self.address = address
+        self.phone = phone
+        self.email = email
+        self.allergies = allergies
+        self.medicalHistory = medicalHistory
+        self.age = age
+        self.birthDate = birthDate
+        self.notes = notes
+        self.profileImageURL = profileImageURL
+        self.medications = medications
+        self.history = history
+        self.emergencyContact = emergencyContact
+        self.city = city
     }
 }

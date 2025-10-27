@@ -14,9 +14,12 @@ import FirebaseFirestore
 final class PatientsViewModel: ObservableObject {
     
     @Published var patients: [Patient] = []
+    @Published var isLoading = false
     private let service: FirebaseServiceType = FirebaseLiveService()
     
     func load() async {
+        isLoading = true
+        defer { isLoading = false }
         do {
             self.patients = try await service.fetchPatients()
         } catch {

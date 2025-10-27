@@ -35,7 +35,8 @@ struct GlobalSearchView: View {
                 }
                 Section("Aufträge") {
                     ForEach(appState.filteredOrders(appState.searchText)) { o in
-                        NavigationLink("Auftrag: \(o.patientId.replacingOccurrences(of: "_", with: " "))") {
+                        let title = "Auftrag: \(o.patientName)"
+                        NavigationLink(title) {
                             OrderDetailView(order: o).environmentObject(appState)
                         }
                     }

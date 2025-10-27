@@ -11,6 +11,7 @@ struct PatientProfileView: View {
     
     let patientId: String
     @StateObject private var viewModel = PatientProfileViewModel()
+    @State private var showEmergencyContactSheet = false
     
     var body: some View {
         ScrollView {
@@ -29,16 +30,21 @@ struct PatientProfileView: View {
                             Text("\(patient.age) Jahre")
                                 .foregroundColor(.white.opacity(0.9))
                             
-                            Text(patient.address)
+                            Text(patient.address ?? "Keine Adresse angegeben")
                                 .foregroundColor(.white.opacity(0.9))
                             
-                            Text(patient.city)
+                            Text(patient.city ?? "Keine Stadt angegeben")
                                 .foregroundColor(.white.opacity(0.8))
                         }
                         Spacer()
-                        
-                        Image(systemName: "key.fill")
-                            .foregroundColor(.white.opacity(0.9))
+                        Button {
+                            showEmergencyContactSheet = true
+                        } label: {
+                            Image(systemName: "person.crop.circle.badge.exclam")
+                                .font(.title2)
+                                .foregroundColor(.red)
+                        }
+                        .accessibilityLabel("Notfallkontakt anzeigen")
                     }
                     
                     Divider().background(.white.opacity(0.2))
@@ -74,7 +80,7 @@ struct PatientProfileView: View {
                     }
 
                     // 🔹 Karte
-                    let addr = [patient.address, patient.city].joined(separator: ", ")
+                    let addr = [patient.address ?? "", patient.city ?? ""].joined(separator: ", ")
                     AddressMapView(address: addr.isEmpty ? nil : addr, title: patient.name)
                 }
                 .padding()
@@ -83,17 +89,82 @@ struct PatientProfileView: View {
                     .padding()
             }
         }
-        .background(Color.black.ignoresSafeArea())
+        .background(Color(UIColor.systemBackground).ignoresSafeArea())
         .task {
             await viewModel.loadPatient(id: patientId)
         }
         .navigationTitle("Profil")
+        .sheet(isPresented: $showEmergencyContactSheet) {
+            if let contact = viewModel.patient?.emergencyContact {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Notfallkontakt")
+                        .font(.title2)
+                        .bold()
+                    
+                    HStack {
+                        Text("Name:")
+                            .bold()
+                        Text("\(contact.name)")
+                    }
+                    
+                    HStack {
+                        Text("Telefon:")
+                            .bold()
+                        Text(contact.phone ?? "Keine Telefonnummer angegeben")
+                    }
+                    
+                    HStack {
+                        Text("E-Mail:")
+                            .bold()
+                        Text(contact.email ?? "Keine E-Mail-Adresse angegeben")
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Adresse:")
+                            .bold()
+                        Text(contact.address ?? "Keine Adresse angegeben")
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+                .presentationDetents([.medium, .large])
+            } else {
+                VStack(spacing: 16) {
+                    Text("Kein Notfallkontakt vorhanden.")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    Button {
+                        viewModel.newEmergencyContact = EmergencyContact(
+                            name: "",
+                            relation: "",
+                            phone: "",
+                            email: "",
+                            address: "",
+                            age: nil
+                        )
+                        viewModel.showAddEmergencyContactSheet = true
+                    } label: {
+                        Label("Notfallkontakt hinzufügen", systemImage: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding()
+                if viewModel.showAddEmergencyContactSheet {
+                    EmergencyContactEditorView(viewModel: viewModel)
+                }
+            }
+        }
     }
     
     private func initials(from name: String) -> String {
-        let parts = name.split(separator: " ")
-        let initialChars = parts.prefix(2).compactMap { $0.first }
-        return String(initialChars)
+        name.split(separator: " ")
+            .compactMap { $0.first }
+            .prefix(2)
+            .map(String.init)
+            .joined()
     }
 }
 

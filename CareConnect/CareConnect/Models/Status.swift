@@ -24,7 +24,7 @@ enum StaffStatus: String, CaseIterable, Identifiable, Codable {
         case .available: return .green
         case .busy:      return .orange
         case .pause:     return .yellow
-        case .off:       return .gray
+        case .off:       return .red
         case .vacation:  return .blue
         }
     }

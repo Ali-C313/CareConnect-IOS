@@ -26,10 +26,14 @@ struct NewOrderSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Patient") {
-                    TextField("Name eingeben", text: $patientName)
-                        .textInputAutocapitalization(.words)
-                        .disableAutocorrection(true)
+                Section("Patient auswählen") {
+                    Picker("Patient", selection: $patientName) {
+                        ForEach(appState.patients, id: \.uid) { patient in
+                            let displayName = ((patient.firstName ?? "") + " " + (patient.lastName ?? "")).trimmingCharacters(in: .whitespaces)
+                            Text(displayName.isEmpty ? (patient.email ?? "Unbekannt") : displayName)
+                                .tag(patient.uid ?? "")
+                        }
+                    }
                 }
 
                 Section("Beschreibung") {
@@ -60,16 +64,15 @@ struct NewOrderSheet: View {
                     .disabled(patientName.isEmpty || descriptionText.isEmpty)
                 }
             }
-            .overlay {
-                if isSaving {
-                    ZStack {
-                        Color.black.opacity(0.4).ignoresSafeArea()
+            .overlay(
+                Group {
+                    if isSaving {
                         ProgressView("Speichere Auftrag…")
                             .padding()
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                     }
                 }
-            }
+            )
             .alert("Hinweis", isPresented: $showAlert) {
                 Button("OK") { showAlert = false }
             } message: {
@@ -88,16 +91,23 @@ struct NewOrderSheet: View {
         // ✅ Zugriff auf deinen angemeldeten Benutzer
         let creatorUID = appState.currentUser?.uid ?? "unbekannt"
 
+        guard let selectedPatient = appState.patients.first(where: { $0.uid == patientName }) else {
+            alertMessage = "Fehler: Patient nicht gefunden."
+            showAlert = true
+            return
+        }
+        let displayName = ((selectedPatient.firstName ?? "") + " " + (selectedPatient.lastName ?? "")).trimmingCharacters(in: .whitespaces)
+
         let orderId = UUID().uuidString
         let newOrder: [String: Any] = [
             "id": orderId,
-            "patientName": patientName,
+            "patientName": displayName.isEmpty ? (selectedPatient.email ?? "") : displayName,
             "description": descriptionText,
-            "createdAt": Timestamp(date: Date()),
+            "createdAt": FieldValue.serverTimestamp(),
             "dueDate": Timestamp(date: dueDate),
             "state": "offen",
             "createdBy": creatorUID,
-            "assignedTo": NSNull(),
+            "assignedTo": patientName,
             "notes": []
         ]
 

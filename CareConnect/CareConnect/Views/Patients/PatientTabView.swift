@@ -11,16 +11,20 @@ struct PatientTabView: View {
     var body: some View {
         TabView {
             PatientHomeView()
-                .tabItem { Label("Home", systemImage: "house.fill") }
-
+                .tabItem { Label("Home", systemImage: "house.fill")
+                }
             LiveEmergencyView()
-                .tabItem { Label("Auftrag Status", systemImage: "staroflife.fill") }
-
+                .tabItem { Label("Auftrag Status", systemImage: "staroflife.fill")
+                }
             PatientMedicineView()
-                .tabItem { Label("Medizin", systemImage: "cross.case.fill") }
-
+                .tabItem { Label("Medizin", systemImage: "cross.case.fill")
+                }
             PatientAppointmentsView()
-                .tabItem { Label("Termin", systemImage: "calendar.badge.plus") }
+                .tabItem { Label("Termin", systemImage: "calendar.badge.plus")
+                }
+            PatientSettingsView()
+                .tabItem { Label("Einstellungen", systemImage: "gear")
+                }
         }
         .tint(.green)
     }

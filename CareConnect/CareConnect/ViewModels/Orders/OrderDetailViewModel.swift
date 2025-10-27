@@ -15,7 +15,9 @@ final class OrderDetailViewModel: ObservableObject {
 
     private let orderRepo: OrderRepository
 
-    init(orderRepo: OrderRepository = FirebaseOrderRepository()) { self.orderRepo = orderRepo }
+    init(orderRepo: OrderRepository? = nil) {
+        self.orderRepo = orderRepo ?? FirebaseOrderRepository()
+    }
 
     func accept(order: Order, by employeeId: String) async {
         guard let id = order.id else { return }

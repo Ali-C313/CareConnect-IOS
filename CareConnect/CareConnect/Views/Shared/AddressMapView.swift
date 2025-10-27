@@ -17,13 +17,15 @@ struct AddressMapView: View {
         center: CLLocationCoordinate2D(latitude: 52.520008, longitude: 13.404954),
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
-    @State private var annotation: MKPointAnnotation?
+    @State private var annotation: IdentifiableAnnotation?
     @State private var isGeocoding = false
     
     var body: some View {
         ZStack {
-            Map(coordinateRegion: $region, annotationItems: annotation.map { [$0] } ?? []) { point in
-                MapMarker(coordinate: point.coordinate)
+            Map(position: .constant(.region(region))) {
+                if let wrapped = annotation {
+                    Marker(wrapped.annotation.title ?? "Ort", coordinate: wrapped.annotation.coordinate)
+                }
             }
             .frame(height: 220)
             .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -43,33 +45,44 @@ struct AddressMapView: View {
             let a = MKPointAnnotation()
             a.coordinate = region.center
             a.title = title ?? "Berlin"
-            annotation = a
+            annotation = IdentifiableAnnotation(annotation: a)
             return
         }
         isGeocoding = true
         defer { isGeocoding = false }
         
-        let geocoder = CLGeocoder()
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = address
+        
         do {
-            let placemarks = try await geocoder.geocodeAddressString(address)
-            if let loc = placemarks.first?.location?.coordinate {
+            let search = MKLocalSearch(request: request)
+            let response = try await search.start()
+            if let item = response.mapItems.first {
+                let loc = item.location.coordinate
                 region.center = loc
                 let a = MKPointAnnotation()
                 a.coordinate = loc
-                a.title = title ?? address
-                annotation = a
+                a.title = title ?? item.name ?? address
+                annotation = IdentifiableAnnotation(annotation: a)
+            } else {
+                let a = MKPointAnnotation()
+                a.coordinate = region.center
+                a.title = title ?? "Berlin"
+                annotation = IdentifiableAnnotation(annotation: a)
             }
         } catch {
             let a = MKPointAnnotation()
             a.coordinate = region.center
             a.title = title ?? "Berlin"
-            annotation = a
+            annotation = IdentifiableAnnotation(annotation: a)
         }
     }
 }
 
-extension MKPointAnnotation: Identifiable {
-    public var id: String { "\(coordinate.latitude)-\(coordinate.longitude)-\(title ?? "")" }
+
+struct IdentifiableAnnotation: Identifiable {
+    let id = UUID()
+    let annotation: MKPointAnnotation
 }
 
 #Preview {

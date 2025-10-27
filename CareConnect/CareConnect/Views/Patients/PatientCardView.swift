@@ -21,7 +21,7 @@ struct PatientCardView: View {
                         .font(.headline)
                         .foregroundColor(CCDesign.textPrimary)
                     
-                    Text("\(patient.age) Jahre • \(patient.city)")
+                    Text(verbatim: "\(patient.age ?? 0) Jahre • \(patient.city)")
                         .font(.subheadline)
                         .foregroundColor(CCDesign.textSecondary)
                 }
@@ -68,7 +68,8 @@ struct PatientCardView: View {
         address: "Musterstraße 12, Köln",
         phone: "0123456789",
         birthDate: nil,
-        notes: nil
+        notes: nil,
+        city: "Berlin"
     ))
     .preferredColorScheme(.dark)
     .padding()

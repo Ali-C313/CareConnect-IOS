@@ -16,6 +16,7 @@ protocol FirebaseServiceType {
     func fetchPatient(by id: String) async throws -> Patient?
     func updateOrder(id: String, fields: [String: Any]) async throws
     func updateEmployee(id: String, fields: [String: Any]) async throws
+    func updatePatient(id: String, fields: [String: Any]) async throws
     func listen<T: Decodable>(to collection: String, as type: T.Type,
                               onChange: @escaping (Result<[T], Error>) -> Void) -> ListenerRegistration
 }
@@ -32,6 +33,7 @@ final class FirebaseLiveService: FirebaseServiceType {
     }
     func fetchPatients() async throws -> [Patient] {
         let snap = try await patientsRef.getDocuments()
+        print("📥 Firebase fetchPatients: \(snap.documents.count) Dokumente gefunden")
         return snap.documents.compactMap { try? $0.data(as: Patient.self) }
     }
     func fetchOrders() async throws -> [Order] {
@@ -50,6 +52,18 @@ final class FirebaseLiveService: FirebaseServiceType {
     func updateEmployee(id: String, fields: [String: Any]) async throws {
         guard !id.isEmpty else { throw NSError(domain: "FirebaseService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Fehlende Mitarbeiter-ID"]) }
         try await employeesRef.document(id).setData(fields, merge: true)
+    }
+    func updatePatient(id: String, fields: [String: Any]) async throws {
+        var documentID = id
+        if documentID.isEmpty, let uid = Auth.auth().currentUser?.uid {
+            documentID = uid
+        }
+        guard !documentID.isEmpty else {
+            throw NSError(domain: "FirebaseService", code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Fehlende Patienten-ID"])
+        }
+        try await patientsRef.document(documentID).setData(fields, merge: true)
+        print("✅ Patient-Daten aktualisiert für ID: \(documentID)")
     }
 
     func listen<T: Decodable>(to collection: String, as type: T.Type,

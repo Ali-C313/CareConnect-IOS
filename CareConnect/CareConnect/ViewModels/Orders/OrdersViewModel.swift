@@ -7,74 +7,79 @@
 
 import Foundation
 import Combine
+import FirebaseCore
 
 @MainActor
 final class OrdersViewModel: ObservableObject {
     @Published var orders: [Order] = []
     @Published var selectedState: OrderState = .aktuell
-    
-    private let service: FirebaseServiceType = FirebaseLiveService()
+    @Published var errorMessage: String? = nil
+    @Published var showError: Bool = false
+    private let repository = FirebaseOrderRepository()
     
     // Sichtbare Liste (24h-Regel für erledigte)
     var filtered: [Order] {
         let now = Date()
         return orders
             .filter { o in
-                if o.state != selectedState { return false }
-                if o.state == .erledigt {
-                    // nur 24h sichtbar
-                    return (o.date.addingTimeInterval(24*60*60) > now)
+                switch selectedState {
+                case .aktuell:
+                    return o.state == .aktuell
+                case .offen:
+                    return o.state == .offen
+                case .erledigt:
+                    return o.state == .erledigt
                 }
-                return true
             }
-            .sorted { $0.date > $1.date }
+            .sorted { ($0.createdAt?.dateValue() ?? .distantPast) > ($1.createdAt?.dateValue() ?? .distantPast) }
+    }
+    
+    func filteredOrders(_ state: OrderState) -> [Order] {
+        let now = Date()
+        return orders
+            .filter { o in
+                switch state {
+                case .aktuell:
+                    return o.state == .aktuell
+                case .offen:
+                    return o.state == .offen
+                case .erledigt:
+                    return o.state == .erledigt
+                }
+            }
+            .sorted { ($0.createdAt?.dateValue() ?? .distantPast) > ($1.createdAt?.dateValue() ?? .distantPast) }
     }
     
     func count(for state: OrderState) -> Int {
         let now = Date()
         return orders.filter { o in
-            if o.state != state { return false }
-            if o.state == .erledigt {
-                return (o.date.addingTimeInterval(24*60*60) > now)
+            switch state {
+            case .aktuell:
+                return o.state == .aktuell
+            case .offen:
+                return o.state == .offen
+            case .erledigt:
+                return o.state == .erledigt
             }
-            return true
         }.count
     }
     
-    func load() async {
-        do {
-            orders = try await service.fetchOrders()
-        } catch {
-            print("❌ Fehler beim Laden der Aufträge:", error.localizedDescription)
+    // Wird durch Live-Listener ersetzt
+    func startListening() {
+        repository.listenToAllOrders { [weak self] items in
+            DispatchQueue.main.async {
+                self?.orders = items
+            }
+        } onError: { [weak self] err in
+            DispatchQueue.main.async {
+                self?.errorMessage = err.localizedDescription
+                self?.showError = true
+            }
         }
     }
     
-    // MARK: - Aktionen
-    func acceptOrder(_ order: Order, by employeeId: String) async {
-        guard let id = order.id else { return }
-        do {
-            try await service.updateOrder(id: id, fields: [
-                "state": OrderState.aktuell.rawValue,
-                "employeeId": employeeId,
-                "date": Date()  // Zeitpunkt der Übernahme
-            ])
-            await load()
-        } catch {
-            print("❌ Fehler beim Annehmen:", error.localizedDescription)
-        }
-    }
-    
-    func completeOrder(_ order: Order) async {
-        guard let id = order.id else { return }
-        do {
-            try await service.updateOrder(id: id, fields: [
-                "state": OrderState.erledigt.rawValue,
-                "date": Date()  // Zeitpunkt der Fertigstellung (für 24h-Regel)
-            ])
-            await load()
-        } catch {
-            print("❌ Fehler beim Abschließen:", error.localizedDescription)
-        }
+    func stopListening() {
+        repository.stopListening()
     }
     
     // (optional) IDs zu Namen auflösen – hier können später Caches/Lookups rein

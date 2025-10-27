@@ -15,8 +15,19 @@ struct PatientsListView: View {
         NavigationStack {
             ZStack {
                 CCDesign.background.ignoresSafeArea()
-                if vm.patients.isEmpty {
-                    ProgressView("Lade Patienten…").tint(.accentColor)
+
+                let isLoading = vm.isLoading
+                if isLoading {
+                    ProgressView("Lade Patienten…")
+                        .tint(.accentColor)
+                } else if vm.patients.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "person.3.sequence.fill")
+                            .font(.system(size: 48))
+                            .foregroundColor(.gray)
+                        Text("Keine Patienten gefunden")
+                            .foregroundColor(.secondary)
+                    }
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 16) {

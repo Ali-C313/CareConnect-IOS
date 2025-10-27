@@ -22,6 +22,9 @@ struct RegisterView: View {
     @State private var lastName = ""
     @State private var selectedRole = "Mitarbeiter"
     @State private var birthDate = Date(timeIntervalSince1970: 946684800) // 2000-01-01
+    @State private var address = ""
+    @State private var city = ""
+    @State private var phone = ""
     private let roles = ["Mitarbeiter", "Patient"]
 
     init(appState: AppStateViewModel) {
@@ -47,6 +50,15 @@ struct RegisterView: View {
 
                         DatePicker("Geburtsdatum", selection: $birthDate, displayedComponents: .date)
                             .datePickerStyle(.compact)
+                        
+                        if selectedRole == "Patient" {
+                            TextField("Adresse", text: $address)
+                                .textFieldStyle(.roundedBorder)
+                            TextField("Stadt", text: $city)
+                                .textFieldStyle(.roundedBorder)
+                            TextField("Telefonnummer", text: $phone)
+                                .textFieldStyle(.roundedBorder)
+                        }
                     }
                     .padding(.horizontal)
 
@@ -126,15 +138,20 @@ struct RegisterView: View {
             if selectedRole == "Mitarbeiter" {
                 try await db.collection("employees").document(user.uid)
                     .setData(common.merging([
+                        "uid": user.uid,
                         "role": "Pflegekraft",
                         "status": StaffStatus.available.rawValue
                     ]) { $1 }, merge: true)
             } else {
                 try await db.collection("patients").document(user.uid)
                     .setData(common.merging([
-                        "address": "",
-                        "phone":   "",
-                        "notes":   ""
+                        "uid": user.uid,
+                        "address": address,
+                        "city": city,
+                        "phone": phone,
+                        "notes": "",
+                        "age": 0,
+                        "emergencyContact": NSNull()
                     ]) { $1 }, merge: true)
             }
         } catch {

@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
+import MapKit
 
 struct CurrentOrderView: View {
     
@@ -30,16 +32,16 @@ struct CurrentOrderView: View {
                         // Mitarbeiter & Patient Header
                         HStack(spacing: 24) {
                             VStack {
-                                AvatarView(initials: initials(from: emp.name), size: 64)
-                                Text(emp.name)
+                                AvatarView(initials: initials(from: "\(emp.firstName) \(emp.lastName)"), size: 64)
+                                Text("\(emp.firstName) \(emp.lastName)")
                                     .foregroundColor(.white)
                             }
                             Image(systemName: "arrow.right")
                                 .font(.title2)
                                 .foregroundColor(.white)
                             VStack {
-                                AvatarView(initials: initials(from: pat.name), size: 64)
-                                Text(pat.name)
+                                AvatarView(initials: initials(from: "\(pat.firstName) \(pat.lastName)"), size: 64)
+                                Text("\(pat.firstName) \(pat.lastName)")
                                     .foregroundColor(.white)
                             }
                         }
@@ -49,7 +51,7 @@ struct CurrentOrderView: View {
                         Text("📝 Bemerkungen:")
                             .foregroundColor(.red)
                             .bold()
-                        Text(order.notes ?? "Keine Bemerkungen vorhanden.")
+                        Text(order.notes?.joined(separator: ", ") ?? "Keine Bemerkungen vorhanden.")
                             .foregroundColor(.white)
                             .fixedSize(horizontal: false, vertical: true)
                         
@@ -60,25 +62,16 @@ struct CurrentOrderView: View {
                             .foregroundColor(.red)
                             .bold()
                         
-                        let addr = [pat.address, pat.city].compactMap { $0 }.joined(separator: ", ")
-                        AddressMapView(address: addr.isEmpty ? nil : addr, title: pat.name)
+                        let address = [pat.address, pat.city].compactMap { $0 }.joined(separator: ", ")
+                        if address.isEmpty {
+                            Text("Keine Adresse verfügbar")
+                                .foregroundColor(.white)
+                        } else {
+                            AddressMapView(address: address, title: "\(pat.firstName) \(pat.lastName)")
+                        }
                         
                         Divider().background(.white.opacity(0.2))
                         
-                        // Dokumente
-                        if !order.documentFiles.isEmpty {
-                            Text("📄 Dokumente:")
-                                .foregroundColor(.red)
-                                .bold()
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack {
-                                    ForEach(order.documentFiles) { doc in
-                                        PDFCardView(fileName: doc.fileName)
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
                     } else {
                         Text("Fehler: Daten konnten nicht geladen werden.")
                             .foregroundColor(.red)
@@ -99,8 +92,16 @@ struct CurrentOrderView: View {
             async let allEmployees = service.fetchEmployees()
             
             let (patients, employees) = try await (allPatients, allEmployees)
-            self.patient = patients.first(where: { $0.id == order.patientId })
-            self.employee = employees.first(where: { $0.id == order.employeeId })
+            self.patient = patients.first(where: { patient in
+                let uidMatch = (patient.uid ?? "") == (order.assignedTo ?? "")
+                let fullName = ((patient.firstName ?? "") + " " + (patient.lastName ?? "")).trimmingCharacters(in: .whitespaces).lowercased()
+                let email = (patient.email ?? "").lowercased()
+                let target = order.patientName.lowercased()
+                return uidMatch || fullName == target || email == target
+            })
+            self.employee = employees.first(where: { employee in
+                (employee.id ?? "") == (order.assignedTo ?? "")
+            })
         } catch {
             print("❌ Fehler beim Laden der Order-Details:", error.localizedDescription)
         }
@@ -118,16 +119,16 @@ struct CurrentOrderView: View {
 #Preview {
     // Beispielvorschau
     let exampleOrder = Order(
-        employeeId: "emp_sarah_mueller",
-        patientId: "pat_berta",
-        notes: "Blutdruck kontrollieren und Medikamente auffüllen.",
         state: .aktuell,
-        documentFiles: [
-            DocumentFile(fileName: "Medikamente.pdf"),
-            DocumentFile(fileName: "Bericht-1.pdf")
-        ]
+        notes: ["Blutdruck kontrollieren und Medikamente auffüllen."],
+        description: "Blutdruck Kontrolle & Medikamente",
+        patientName: "Berta Musterfrau",
+        createdBy: "TestUser123",
+        assignedTo: nil,
+        dueDate: Timestamp(date: Date().addingTimeInterval(3600)),
+        createdAt: Timestamp(date: Date())
     )
-    return CurrentOrderView(order: exampleOrder)
+    CurrentOrderView(order: exampleOrder)
         .preferredColorScheme(.dark)
         .background(Color.black)
 }

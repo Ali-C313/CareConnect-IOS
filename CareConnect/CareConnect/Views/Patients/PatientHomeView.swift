@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct PatientHomeView: View {
+    @EnvironmentObject var appState: AppStateViewModel
     @State private var showAlert = false
     @State private var showLiveView = false
 
@@ -34,11 +36,22 @@ struct PatientHomeView: View {
                     }
                     Spacer()
                 }
-                .alert("Notruf erfolgreich gemeldet", isPresented: $showAlert) {
-                    Button("Live Ansicht") { showLiveView = true }
-                    Button("Bestätigen", role: .cancel) { }
+                .alert("Notfallaktion", isPresented: $showAlert) {
+                    Button("Dringlichen Auftrag erstellen") {
+                        Task {
+                            if let userID = appState.currentUser?.uid {
+                                await appState.createEmergencyOrder(for: userID)
+                            }
+                        }
+                    }
+                    Button("Notfallkontakt anrufen") {
+                        if let url = URL(string: "tel://0123456789") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    Button("Abbrechen", role: .cancel) { }
                 } message: {
-                    Text("Bitte bewahren Sie Ruhe, es wird jeden Moment Hilfe ankommen.")
+                    Text("Wählen Sie eine Notfallaktion aus:")
                 }
             }
             .navigationTitle("Home")

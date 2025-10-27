@@ -25,7 +25,7 @@ struct MainTabView: View {
                     Label("Aufträge", systemImage: "doc.text.fill")
                 }
             
-            NavigationStack { SettingsView() }
+            NavigationStack { EmployeeSettingsView() }
                 .tabItem {
                     Label("Einstellungen", systemImage: "gear")
                 }

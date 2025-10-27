@@ -10,9 +10,9 @@ import SwiftUI
 import FirebaseFirestore
 
 enum OrderState: String, Codable, CaseIterable, Identifiable {
-    case aktuell  = "Aktuell"
-    case offen    = "Offen"
-    case erledigt = "Erledigt"
+    case aktuell  = "aktuell"
+    case offen    = "offen"
+    case erledigt = "erledigt"
 
     var id: String { rawValue }
     var displayName: String { rawValue }
@@ -32,12 +32,35 @@ struct DocumentFile: Identifiable, Codable, Hashable {
 
 struct Order: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
-    var employeeId: String
-    var patientId: String
-    var notes: String?
     var state: OrderState
-    var documentFiles: [DocumentFile] = []
-    var date: Date = Date()
+    var notes: [String]? = []
+    var description: String
+    var patientName: String
+    var createdBy: String
+    var assignedTo: String?
+    var dueDate: Timestamp?
+    var createdAt: Timestamp?
+
+    init(
+        state: OrderState,
+        notes: [String]? = [],
+        description: String,
+        patientName: String,
+        createdBy: String,
+        assignedTo: String? = nil,
+        dueDate: Timestamp,
+        createdAt: Timestamp
+    ) {
+        self.id = nil
+        self.state = state
+        self.notes = notes
+        self.description = description
+        self.patientName = patientName
+        self.createdBy = createdBy
+        self.assignedTo = assignedTo
+        self.dueDate = dueDate
+        self.createdAt = createdAt
+    }
 
     var isActive: Bool { state == .aktuell }
     var displayTitle: String { "Auftrag #\((id ?? "Unbekannt").prefix(6))" }

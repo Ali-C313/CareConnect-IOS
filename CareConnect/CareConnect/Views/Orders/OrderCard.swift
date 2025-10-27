@@ -14,19 +14,30 @@ struct OrderCard: View {
     @EnvironmentObject var appState: AppStateViewModel
     
     var patientName: String {
-        if let patient = appState.patients.first(where: { $0.id == order.patientId }) {
-            return "\(patient.firstName) \(patient.lastName)"
+        if let patient = appState.patients.first(where: {
+            let emailMatch = (($0.email ?? "").lowercased() == order.patientName.lowercased())
+            let fullName = ((($0.firstName ?? "") + " " + ($0.lastName ?? "")).trimmingCharacters(in: .whitespaces)).lowercased()
+            let nameMatch = (fullName == order.patientName.lowercased())
+            return ($0.uid == order.assignedTo) || emailMatch || nameMatch
+        }) {
+            let first = patient.firstName ?? ""
+            let last = patient.lastName ?? ""
+            if !first.isEmpty || !last.isEmpty {
+                return "\(first) \(last)"
+            }
+            return patient.email ?? "Unbekannt"
         }
-        return "Unbekannter Patient"
+        let fallback = order.patientName.isEmpty ? "Unbekannt" : order.patientName
+        return fallback
     }
     
     var employeeName: String {
-        if let employee = appState.employees.first(where: { $0.id == order.employeeId }) {
+        if let employee = appState.employees.first(where: { $0.id == order.assignedTo }) {
             return "\(employee.firstName) \(employee.lastName)"
-        } else if order.employeeId.isEmpty {
+        } else if (order.assignedTo ?? "").isEmpty {
             return "Noch offen"
         }
-        return order.employeeId
+        return order.assignedTo ?? ""
     }
     
     var body: some View {
@@ -51,7 +62,7 @@ struct OrderCard: View {
             
             // MARK: - Auftragsnotizen
             if let notes = order.notes, !notes.isEmpty {
-                Text(notes)
+                Text(notes.joined(separator: ", "))
                     .font(.subheadline)
                     .foregroundColor(CCDesign.textSecondary)
                     .lineLimit(2)
@@ -76,4 +87,3 @@ struct OrderCard: View {
         .shadow(color: Color(.separator).opacity(0.3), radius: 2, x: 0, y: 1)
     }
 }
-

@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import FirebaseFirestore
 
 @MainActor
 final class NewOrderViewModel: ObservableObject {
@@ -18,21 +19,24 @@ final class NewOrderViewModel: ObservableObject {
 
     private let orderRepo: OrderRepository
 
-    init(orderRepo: OrderRepository = FirebaseOrderRepository()) { self.orderRepo = orderRepo }
+    init(orderRepo: OrderRepository? = nil) {
+        self.orderRepo = orderRepo ?? FirebaseOrderRepository()
+    }
 
     func save(creatorUID: String) async -> Bool {
         guard !patientId.isEmpty, !notes.isEmpty else { return false }
         isSaving = true; defer { isSaving = false }
         do {
-            var order = Order(
-                employeeId: "",
-                patientId: patientId,
-                notes: notes,
+            let order = Order(
                 state: .offen,
-                documentFiles: [],
-                date: dueDate
+                notes: [notes],
+                description: "Auftrag", // Falls kein eigener Beschreibungstext vorhanden
+                patientName: "", // Anzeige optional
+                createdBy: creatorUID,
+                assignedTo: patientId, // Patient UID korrekt zugeordnet
+                dueDate: Timestamp(date: dueDate),
+                createdAt: Timestamp(date: Date())
             )
-            order.id = UUID().uuidString
             try await orderRepo.create(order)
             return true
         } catch { self.error = error.localizedDescription; return false }

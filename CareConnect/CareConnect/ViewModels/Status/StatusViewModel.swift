@@ -17,10 +17,10 @@ final class StatusViewModel: ObservableObject {
     private let currentEmployeeIdProvider: () -> String?
 
     init(current: StaffStatus,
-         employeeRepo: EmployeeRepository = FirebaseEmployeeRepository(),
+         employeeRepo: EmployeeRepository? = nil,
          currentEmployeeIdProvider: @escaping () -> String?) {
         self.current = current
-        self.employeeRepo = employeeRepo
+        self.employeeRepo = employeeRepo ?? FirebaseEmployeeRepository()
         self.currentEmployeeIdProvider = currentEmployeeIdProvider
     }
 
