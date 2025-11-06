@@ -34,6 +34,7 @@ struct RegisterView: View {
     @State private var city = ""
     /// Telefonnummer
     @State private var phone = ""
+    @StateObject private var addressVM = AddressSearchViewModel()
     private let roles = ["Mitarbeiter", "Patient"]
 
     init(appState: AppStateViewModel) {
@@ -61,8 +62,27 @@ struct RegisterView: View {
                             .datePickerStyle(.compact)
                         
                         if selectedRole == "Patient" {
-                            TextField("Adresse", text: $address)
-                                .textFieldStyle(.roundedBorder)
+                            VStack(alignment: .leading) {
+                                TextField("Adresse", text: $addressVM.queryFragment)
+                                    .textInputAutocapitalization(.words)
+                                    .disableAutocorrection(true)
+                                    .textFieldStyle(.roundedBorder)
+
+                                if !addressVM.suggestions.isEmpty {
+                                    List(addressVM.suggestions, id: \.self) { suggestion in
+                                        Button {
+                                            address = suggestion
+                                            addressVM.queryFragment = suggestion
+                                            addressVM.suggestions = []
+                                        } label: {
+                                            Text(suggestion)
+                                                .foregroundStyle(.primary)
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                    .frame(maxHeight: 150)
+                                }
+                            }
                             TextField("Stadt", text: $city)
                                 .textFieldStyle(.roundedBorder)
                             TextField("Telefonnummer", text: $phone)

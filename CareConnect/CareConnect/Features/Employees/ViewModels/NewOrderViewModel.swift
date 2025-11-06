@@ -40,7 +40,7 @@ final class NewOrderViewModel: ObservableObject {
                 description: "Auftrag",
                 patientName: "",
                 createdBy: creatorUID,
-                assignedTo: patientId,
+                assignedTo: "",
                 dueDate: Timestamp(date: dueDate),
                 createdAt: Timestamp(date: Date())
             )

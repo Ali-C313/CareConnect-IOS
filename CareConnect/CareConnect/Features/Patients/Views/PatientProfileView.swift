@@ -209,31 +209,54 @@ struct PatientProfileView: View {
                         )
                     }
 
-                    // 🔹 Geburtstag
-                    if patient.birthDate != nil || patient.age != nil {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Geburtstag")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            VStack(alignment: .leading, spacing: 6) {
-                                if let ts = patient.birthDate {
-                                    let dateText = formatDate(ts)
-                                    InfoRow(system: "calendar", title: "Geburtsdatum", value: dateText)
-                                    let derived = computeAge(from: ts)
-                                    if let derived = derived { InfoRow(system: "figure.arms.open", title: "Alter (berechnet)", value: "\(derived)") }
+                    // 🔹 Geburtstag & Alter (modernes Design)
+                    if let birthDate = patient.birthDate {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "calendar.circle.fill")
+                                    .foregroundColor(.accentColor)
+                                    .font(.title2)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Geburtsdatum")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Text(birthDate.formattedDate)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
                                 }
-                                if let explicitAge = patient.age {
-                                    InfoRow(system: "figure.arms.open", title: "Alter (Angabe)", value: "\(explicitAge)")
+                                Spacer()
+                            }
+
+                            Divider()
+
+                            if let derivedAge = birthDate.ageYears {
+                                HStack(spacing: 10) {
+                                    Image(systemName: "figure.arms.open")
+                                        .foregroundColor(.accentColor)
+                                        .font(.title2)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Alter")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                        Text("\(derivedAge) Jahre")
+                                            .font(.headline)
+                                            .foregroundColor(.primary)
+                                    }
+                                    Spacer()
                                 }
                             }
                         }
                         .padding()
                         .background(
-                            RoundedRectangle(cornerRadius: 14)
+                            RoundedRectangle(cornerRadius: 16)
                                 .fill(Color(UIColor.secondarySystemBackground))
+                                .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
                         )
-
-                        Divider().background(.white.opacity(0.2))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.accentColor.opacity(0.15), lineWidth: 1)
+                        )
+                        .padding(.vertical, 4)
                     }
 
                     // 🔹 Notizen
@@ -368,60 +391,8 @@ struct PatientProfileView: View {
     }
 }
 
-private struct InfoRow: View {
-    let system: String
-    let title: String
-    let value: String
-    var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: system)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline).foregroundColor(.secondary)
-                Text(value).foregroundColor(.primary)
-            }
-        }
-    }
-}
 
-private struct InfoButtonRow: View {
-    let system: String
-    let title: String
-    let label: String
-    let action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: system)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.subheadline).foregroundColor(.secondary)
-                    Text(label).foregroundColor(.blue)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                }
-                Spacer()
-                Image(systemName: "chevron.right").foregroundColor(.secondary)
-            }
-        }
-    }
-}
 
-extension PatientProfileView {
-    /// Datum formatieren
-    private func formatDate(_ ts: Timestamp) -> String {
-        let date = ts.dateValue()
-        let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "de_DE")
-        fmt.dateFormat = "dd.MM.yyyy"
-        return fmt.string(from: date)
-    }
-    
-    /// Alter berechnen
-    private func computeAge(from ts: Timestamp) -> Int? {
-        let date = ts.dateValue()
-        let comps = Calendar.current.dateComponents([.year], from: date, to: Date())
-        return comps.year
-    }
-}
 
 #Preview {
     PatientProfileView(patientId: "exampleId123")

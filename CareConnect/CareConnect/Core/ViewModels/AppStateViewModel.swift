@@ -347,7 +347,7 @@ func createEmergencyOrder(for userID: String) async {
         "createdBy": Auth.auth().currentUser?.uid ?? "unknown",
         "createdAt": Timestamp(date: Date()),
         "dueDate": Timestamp(date: Date()),
-        "state": "aktuell",
+        "state": "offen",
         "notes": ["Automatisch generierter Notfallauftrag"]
     ]
     do {

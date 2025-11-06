@@ -23,7 +23,8 @@ struct PatientAppointmentsView: View {
             .navigationTitle("Termine")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { /* neuen Termin hinzufügen */ } label: {
+                    Button { /* neuen Termin hinzufügen */ }
+                    label: {
                         Image(systemName: "plus.circle.fill")
                     }
                 }

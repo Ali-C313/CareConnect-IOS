@@ -9,6 +9,7 @@ import SwiftUI
 import PhotosUI
 import FirebaseStorage
 import FirebaseAuth
+import MapKit
 
 struct EditPatientProfileView: View {
     
@@ -27,6 +28,11 @@ struct EditPatientProfileView: View {
     @State private var profileImage: UIImage? = nil
     /// Upload-Status
     @State private var isUploading = false
+    
+    @StateObject private var addressCompleter = AddressSearchViewModel()
+    @State private var newPassword: String = ""
+    @State private var showPasswordAlert = false
+    @State private var passwordErrorMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -71,49 +77,165 @@ struct EditPatientProfileView: View {
                 
                 // 🔹 Allgemeine Informationen
                 Section("Allgemein") {
-                    TextField("Vorname", text: Binding(
-                        get: { patient.firstName ?? "" },
-                        set: { patient.firstName = $0 }
-                    ))
-                    TextField("Nachname", text: Binding(
-                        get: { patient.lastName ?? "" },
-                        set: { patient.lastName = $0 }
-                    ))
-                    TextField("Adresse", text: Binding(
-                        get: { patient.address ?? "" },
-                        set: { patient.address = $0 }
-                    ))
-                    TextField("Stadt", text: Binding(
-                        get: { patient.city ?? "" },
-                        set: { patient.city = $0 }
-                    ))
-                    TextField("E-Mail", text: Binding(
-                        get: { patient.email ?? "" },
-                        set: { patient.email = $0 }
-                    ))
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled(true)
-                    TextField("Telefonnummer", text: Binding(
-                        get: { patient.phone ?? "" },
-                        set: { patient.phone = $0 }
-                    ))
+                    // 🔹 Vorname
+                    HStack {
+                        Image(systemName: "person.fill")
+                            .foregroundColor(.accentColor)
+                        TextField("Vorname", text: Binding(
+                            get: { patient.firstName ?? "" },
+                            set: { patient.firstName = $0 }
+                        ))
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
+                    // 🔹 Nachname
+                    HStack {
+                        Image(systemName: "person.text.rectangle")
+                            .foregroundColor(.accentColor)
+                        TextField("Nachname", text: Binding(
+                            get: { patient.lastName ?? "" },
+                            set: { patient.lastName = $0 }
+                        ))
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
+                    // 🔹 Adresse (Apple Maps API bleibt unverändert)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "mappin.and.ellipse")
+                                .foregroundColor(.accentColor)
+                            TextField("Adresse", text: Binding(
+                                get: { patient.address ?? "" },
+                                set: {
+                                    patient.address = $0
+                                    addressCompleter.queryFragment = $0
+                                }
+                            ))
+                            .textInputAutocapitalization(.words)
+                            .disableAutocorrection(true)
+                        }
+                        .padding(10)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+
+                        if !addressCompleter.suggestions.isEmpty {
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
+                                        Button {
+                                            patient.address = suggestion
+                                            addressCompleter.suggestions.removeAll()
+                                        } label: {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "location.fill")
+                                                    .foregroundColor(.blue)
+                                                Text(suggestion)
+                                                    .foregroundColor(.primary)
+                                                    .lineLimit(2)
+                                                Spacer()
+                                            }
+                                            .padding(10)
+                                            .background(Color(.systemGray5).opacity(0.3))
+                                            .cornerRadius(8)
+                                        }
+                                    }
+                                }
+                                .padding(.top, 4)
+                            }
+                            .frame(maxHeight: 180)
+                            .scrollIndicators(.hidden)
+                            .transition(.opacity)
+                        }
+                    }
+                    .animation(.easeInOut, value: addressCompleter.suggestions)
+
+                    // 🔹 E-Mail
+                    HStack {
+                        Image(systemName: "envelope.fill")
+                            .foregroundColor(.accentColor)
+                        TextField("E-Mail", text: Binding(
+                            get: { patient.email ?? "" },
+                            set: { patient.email = $0 }
+                        ))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+                        .keyboardType(.emailAddress)
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
+                    // 🔹 Telefonnummer
+                    HStack {
+                        Image(systemName: "phone.fill")
+                            .foregroundColor(.accentColor)
+                        TextField("Telefonnummer", text: Binding(
+                            get: { patient.phone ?? "" },
+                            set: { patient.phone = $0 }
+                        ))
+                        .keyboardType(.phonePad)
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 }
                 
                 // 🔹 Medizinische Informationen
                 Section("Medizinisch") {
-                    TextField("Alter", text: Binding(
-                        get: { patient.age.map(String.init) ?? "" },
-                        set: { patient.age = Int($0.filter { $0.isNumber }) }
-                    ))
-                    .keyboardType(.numberPad)
-                    TextField("Allergien", text: Binding(
-                        get: { patient.allergies ?? "" },
-                        set: { patient.allergies = $0 }
-                    ))
-                    TextField("Krankengeschichte", text: Binding(
-                        get: { patient.medicalHistory ?? "" },
-                        set: { patient.medicalHistory = $0 }
-                    ))
+                    // Allergien
+                    HStack {
+                        Image(systemName: "pills.fill")
+                            .foregroundColor(.accentColor)
+                        TextField("Allergien", text: Binding(
+                            get: { patient.allergies ?? "" },
+                            set: { patient.allergies = $0 }
+                        ))
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
+                    // Krankengeschichte
+                    HStack {
+                        Image(systemName: "stethoscope")
+                            .foregroundColor(.accentColor)
+                        TextField("Krankengeschichte", text: Binding(
+                            get: { patient.medicalHistory ?? "" },
+                            set: { patient.medicalHistory = $0 }
+                        ))
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                }
+                
+                Section("Konto & Sicherheit") {
+                    HStack {
+                        Image(systemName: "lock.fill")
+                            .foregroundColor(.accentColor)
+                        SecureField("Neues Passwort", text: $newPassword)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
+                    Button {
+                        Task { await changePassword() }
+                    } label: {
+                        Label("Passwort ändern", systemImage: "key.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(10)
+                            .background(Color.accentColor.opacity(newPassword.isEmpty ? 0.3 : 1))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .disabled(newPassword.isEmpty)
                 }
             }
             .navigationTitle("Profil bearbeiten")
@@ -125,6 +247,13 @@ struct EditPatientProfileView: View {
                     Button("Speichern") {
                         Task { await save() }
                     }
+                }
+            }
+            .alert("Passwortänderung", isPresented: $showPasswordAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                if let message = passwordErrorMessage {
+                    Text(message)
                 }
             }
         }
@@ -168,6 +297,18 @@ struct EditPatientProfileView: View {
             print("❌ Fehler beim Speichern:", error.localizedDescription)
         }
     }
+    
+    private func changePassword() async {
+        do {
+            try await Auth.auth().currentUser?.updatePassword(to: newPassword)
+            passwordErrorMessage = "Passwort erfolgreich geändert."
+            showPasswordAlert = true
+            newPassword = ""
+        } catch {
+            passwordErrorMessage = "Fehler beim Ändern des Passworts: \(error.localizedDescription)"
+            showPasswordAlert = true
+        }
+    }
 }
 
 #Preview {
@@ -181,7 +322,6 @@ struct EditPatientProfileView: View {
         email: "",
         allergies: "",
         medicalHistory: "",
-        age: 42,
         city: ""
     )))
     .preferredColorScheme(.dark)

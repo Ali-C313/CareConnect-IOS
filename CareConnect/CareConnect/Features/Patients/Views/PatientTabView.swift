@@ -14,7 +14,7 @@ struct PatientTabView: View {
             PatientHomeView()
                 .tabItem { Label("Home", systemImage: "house.fill")
                 }
-            LiveEmergencyView()
+            PatientOrdersView()
                 .tabItem { Label("Auftrag Status", systemImage: "staroflife.fill")
                 }
             PatientMedicineView()
