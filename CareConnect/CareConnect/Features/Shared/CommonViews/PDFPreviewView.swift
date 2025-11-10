@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import PDFKit
 
 struct PDFPreviewView: View {

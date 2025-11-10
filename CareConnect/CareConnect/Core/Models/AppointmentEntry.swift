@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct AppointmentEntry: Identifiable, Codable, Equatable {
     let id: UUID

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct InfoRow: View {
     let system: String

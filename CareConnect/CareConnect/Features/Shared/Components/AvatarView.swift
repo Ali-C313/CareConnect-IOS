@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import Foundation
 
 struct AvatarView: View {
     
@@ -18,8 +19,8 @@ struct AvatarView: View {
     /// UI-Inhalt
     var body: some View {
         ZStack {
-            Circle().fill(.white.opacity(0.18))
-            Text(initials).font(.system(size: size * 0.4, weight: .semibold)).foregroundColor(.white)
+            Circle().fill(CCDesign.card.opacity(0.18))
+            Text(initials).font(.system(size: size * 0.4, weight: .semibold)).foregroundColor(CCDesign.textPrimary)
         }
         .frame(width: size, height: size)
         .accessibilityLabel("Avatar: " + initials)

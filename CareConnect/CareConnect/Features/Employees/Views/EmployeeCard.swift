@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import FirebaseAuth
 
 struct EmployeeCard: View {
@@ -43,4 +44,3 @@ struct EmployeeCard: View {
         .shadow(color: Color(.separator).opacity(0.3), radius: 2, x: 0, y: 1)
     }
 }
-

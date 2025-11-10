@@ -13,6 +13,7 @@
 		F8E8195B2EA7A4FE00993F98 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = F8E8195A2EA7A4FE00993F98 /* FirebaseDatabase */; };
 		F8E8195D2EA7A4FE00993F98 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F8E8195C2EA7A4FE00993F98 /* FirebaseFirestore */; };
 		F8E8195F2EA7A4FE00993F98 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = F8E8195E2EA7A4FE00993F98 /* FirebaseStorage */; };
+		F8EF0FD32EC2057C00B36719 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = F8EF0FD22EC2057C00B36719 /* FirebaseMessaging */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,7 +21,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F8CEAEC02EB5021800DA8AE1 /* Exceptions for "CareConnect" folder in "CareConnect" target */ = {
+		F80554B42EC217FA006C8929 /* Exceptions for "CareConnect" folder in "CareConnect" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -33,7 +34,7 @@
 		F821A3F02E95603900A82D68 /* CareConnect */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				F8CEAEC02EB5021800DA8AE1 /* Exceptions for "CareConnect" folder in "CareConnect" target */,
+				F80554B42EC217FA006C8929 /* Exceptions for "CareConnect" folder in "CareConnect" target */,
 			);
 			path = CareConnect;
 			sourceTree = "<group>";
@@ -47,6 +48,7 @@
 			files = (
 				F8E819592EA7A4FE00993F98 /* FirebaseCrashlytics in Frameworks */,
 				F8E819552EA7A4FE00993F98 /* FirebaseAnalytics in Frameworks */,
+				F8EF0FD32EC2057C00B36719 /* FirebaseMessaging in Frameworks */,
 				F8E8195B2EA7A4FE00993F98 /* FirebaseDatabase in Frameworks */,
 				F8E8195D2EA7A4FE00993F98 /* FirebaseFirestore in Frameworks */,
 				F8E819572EA7A4FE00993F98 /* FirebaseAuth in Frameworks */,
@@ -61,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				F821A3F02E95603900A82D68 /* CareConnect */,
+				F8EF0FD12EC2057C00B36719 /* Frameworks */,
 				F821A3EF2E95603900A82D68 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -71,6 +74,13 @@
 				F821A3EE2E95603900A82D68 /* CareConnect.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F8EF0FD12EC2057C00B36719 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -99,6 +109,7 @@
 				F8E8195A2EA7A4FE00993F98 /* FirebaseDatabase */,
 				F8E8195C2EA7A4FE00993F98 /* FirebaseFirestore */,
 				F8E8195E2EA7A4FE00993F98 /* FirebaseStorage */,
+				F8EF0FD22EC2057C00B36719 /* FirebaseMessaging */,
 			);
 			productName = CareConnect;
 			productReference = F821A3EE2E95603900A82D68 /* CareConnect.app */;
@@ -112,7 +123,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					F821A3ED2E95603900A82D68 = {
 						CreatedOnToolsVersion = 26.0.1;
@@ -221,6 +232,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -278,6 +290,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -421,6 +434,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F8E819532EA7A4FE00993F98 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		F8EF0FD22EC2057C00B36719 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8E819532EA7A4FE00993F98 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

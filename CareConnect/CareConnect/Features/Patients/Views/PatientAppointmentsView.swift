@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct PatientAppointmentsView: View {
     /// Terminliste
@@ -13,6 +14,8 @@ struct PatientAppointmentsView: View {
         "Hausbesuch Dr. Müller – 25.10. um 10:00 Uhr",
         "Pflegekontrolle – 27.10. um 15:00 Uhr"
     ]
+    @State private var showAddSheet = false
+    @StateObject private var appointmentsVM = AppointmentsViewModel()
 
     /// UI-Inhalt
     var body: some View {
@@ -23,9 +26,12 @@ struct PatientAppointmentsView: View {
             .navigationTitle("Termine")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { /* neuen Termin hinzufügen */ }
+                    Button { showAddSheet = true }
                     label: {
                         Image(systemName: "plus.circle.fill")
+                    }
+                    .sheet(isPresented: $showAddSheet) {
+                        AddEditAppointmentSheet(viewModel: appointmentsVM)
                     }
                 }
             }

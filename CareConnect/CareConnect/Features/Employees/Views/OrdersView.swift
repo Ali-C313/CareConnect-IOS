@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import FirebaseAuth
 
 struct OrdersView: View {
@@ -17,7 +18,15 @@ struct OrdersView: View {
     /// Filterstatus
     @State private var selectedFilter: OrderState = .offen
     /// Ausgewählter Auftrag
-    @State private var selectedOrder: Order?
+    @State private var selectedOrder: Order? {
+        didSet {
+            if let order = selectedOrder {
+                vm.startLiveTracking(for: appState.currentUser?.uid, orderId: order.id)
+            } else {
+                vm.stopLiveTracking()
+            }
+        }
+    }
     /// Neues Sheet
     @State private var showingNewOrderSheet = false
 
@@ -25,7 +34,8 @@ struct OrdersView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                CCDesign.background.ignoresSafeArea()
+                CCDesign.background
+                    .ignoresSafeArea()
                 VStack(spacing: 12) {
                     Picker("Status", selection: $selectedFilter) {
                         ForEach(OrderState.allCases) { s in
@@ -36,8 +46,9 @@ struct OrdersView: View {
                     .padding(.horizontal)
                     .padding(.top, 12)
 
+                    let orders = vm.filteredOrders(selectedFilter)
+
                     ScrollView {
-                        let orders = vm.filteredOrders(selectedFilter)
                         LazyVStack(spacing: 16) {
                             if orders.isEmpty {
                                 ContentUnavailableView(
@@ -48,7 +59,9 @@ struct OrdersView: View {
                                 .padding(.top, 40)
                             } else {
                                 ForEach(orders) { order in
-                                    Button { selectedOrder = order } label: {
+                                    Button {
+                                        selectedOrder = order
+                                    } label: {
                                         OrderCard(order: order)
                                             .environmentObject(appState)
                                     }
@@ -58,11 +71,17 @@ struct OrdersView: View {
                         }
                         .padding()
                     }
+                    
+                    if vm.isTrackingActive {
+                        Label("Live-Tracking aktiv", systemImage: "location.fill")
+                            .font(.footnote)
+                            .foregroundStyle(CCDesign.info)
+                            .padding(.bottom, 6)
+                    }
                 }
             }
             .navigationTitle("Aufträge")
             .toolbar {
-                // 👉 Plus-Button oben rechts
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingNewOrderSheet = true
@@ -80,8 +99,10 @@ struct OrdersView: View {
             }
             .sheet(isPresented: Binding(get: {
                 selectedOrder != nil
-            }, set: { _ in
-                selectedOrder = nil
+            }, set: { newValue in
+                if !newValue {
+                    selectedOrder = nil
+                }
             })) {
                 if let order = selectedOrder {
                     OrderDetailView(order: order)

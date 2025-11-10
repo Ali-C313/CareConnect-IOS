@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import Foundation
 
 struct SearchBarView: View {
     /// Suchtext

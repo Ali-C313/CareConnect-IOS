@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import MapKit
 import CoreLocation
 

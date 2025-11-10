@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

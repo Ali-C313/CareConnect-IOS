@@ -38,6 +38,7 @@ class PatientOrdersViewModel: ObservableObject {
     @Published var openOrders: [PatientOrderDisplayModel] = []
     @Published var historyOrders: [PatientOrderDisplayModel] = []
     @Published var employeeLocation: CLLocation?
+    @Published var employeeCoordinate: CLLocationCoordinate2D?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
@@ -142,9 +143,10 @@ class PatientOrdersViewModel: ObservableObject {
             }
     }
 
-    func startEmployeeLocationListener(for employeeId: String) {
+    func startEmployeeLocationListener(orderId: String, employeeId: String) {
         employeeLocationListener?.remove()
-        employeeLocationListener = db.collection("employeeLocations").document(employeeId)
+        employeeLocationListener = db.collection("orders").document(orderId)
+            .collection("employeeLocation").document(employeeId)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self = self else { return }
 
@@ -156,12 +158,17 @@ class PatientOrdersViewModel: ObservableObject {
                 guard let data = snapshot?.data(),
                       let lat = data["latitude"] as? CLLocationDegrees,
                       let lon = data["longitude"] as? CLLocationDegrees else {
-                    self.employeeLocation = nil
+                    self.employeeCoordinate = nil
                     return
                 }
 
-                self.employeeLocation = CLLocation(latitude: lat, longitude: lon)
+                self.employeeCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             }
+    }
+
+    func stopEmployeeLocationListener() {
+        employeeLocationListener?.remove()
+        employeeLocationListener = nil
     }
 
     deinit {

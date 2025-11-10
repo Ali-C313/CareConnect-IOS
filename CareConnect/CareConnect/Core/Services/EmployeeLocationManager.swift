@@ -15,10 +15,13 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
 
     /// Letzter Standort
     @Published var lastLocation: CLLocation?
+    @Published var lastUploadStatus: String?
 
     private let manager = CLLocationManager()
     private var db = Firestore.firestore()
     private var employeeId: String? = nil
+    private var orderId: String? = nil
+    private var lastUploadDate: Date?
 
     override private init() {
         super.init()
@@ -31,9 +34,10 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
 
     // MARK: - Aktivieren
     /// Tracking starten
-    func startTracking(for employeeId: String) {
-        print("📍 Start Location Tracking: \(employeeId)")
+    func startTracking(for employeeId: String, orderId: String? = nil) {
+        print("📍 Start Location Tracking: \(employeeId) with orderId: \(orderId ?? "none")")
         self.employeeId = employeeId
+        self.orderId = orderId
         requestPermissionIfNeeded()
         manager.allowsBackgroundLocationUpdates = true
         manager.startUpdatingLocation()
@@ -45,6 +49,7 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
         manager.allowsBackgroundLocationUpdates = false
         manager.stopUpdatingLocation()
         employeeId = nil
+        orderId = nil
     }
 
     // MARK: - Berechtigung
@@ -77,12 +82,21 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         lastLocation = location
+
+        let now = Date()
+        if let lastUpload = lastUploadDate, now.timeIntervalSince(lastUpload) < 10 {
+            // Skip upload to respect cooldown
+            return
+        }
+        lastUploadDate = now
+
         uploadLocation(location)
     }
 
     /// Standortfehler
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("❌ Location error: \(error.localizedDescription)")
+        lastUploadStatus = "Location error: \(error.localizedDescription)"
     }
 
     // MARK: - Firestore Upload
@@ -95,11 +109,20 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
             "updatedAt": Timestamp(date: Date())
         ]
 
-        db.collection("employeeLocations").document(employeeId).setData(data) { error in
+        let documentReference: DocumentReference
+        if let orderId = orderId {
+            documentReference = db.collection("orders").document(orderId).collection("employeeLocation").document(employeeId)
+        } else {
+            documentReference = db.collection("employeeLocations").document(employeeId)
+        }
+
+        documentReference.setData(data) { error in
             if let error = error {
                 print("❌ Fehler beim Upload der Location: \(error.localizedDescription)")
+                self.lastUploadStatus = "Upload failed: \(error.localizedDescription)"
             } else {
                 print("📡 Standort hochgeladen: (\(location.coordinate.latitude), \(location.coordinate.longitude))")
+                self.lastUploadStatus = "Upload successful: (\(location.coordinate.latitude), \(location.coordinate.longitude))"
             }
         }
     }

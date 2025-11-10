@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct EmployeeProfileHeaderView: View {
     /// Profil-ViewModel

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct EmployeeWorkScheduleView: View {
     /// Profil-ViewModel

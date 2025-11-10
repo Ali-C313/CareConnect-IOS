@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct AddEditAppointmentSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -26,72 +27,125 @@ struct AddEditAppointmentSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Termin Details") {
-                    TextField("Wo/Was (z. B. Arztbesuch)", text: $what)
-                    VStack(alignment: .leading) {
-                        TextField("Adresse", text: $addressVM.queryFragment)
-                            .textInputAutocapitalization(.words)
-                            .disableAutocorrection(true)
-                            .textFieldStyle(.roundedBorder)
-
-                        if !addressVM.suggestions.isEmpty {
-                            List(addressVM.suggestions, id: \.self) { suggestion in
-                                Button {
-                                    address = suggestion
-                                    addressVM.queryFragment = suggestion
-                                    addressVM.suggestions = []
-                                } label: {
-                                    Text(suggestion)
-                                        .foregroundStyle(.primary)
-                                        .lineLimit(2)
-                                }
+            List {
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Termin Details", systemImage: "calendar")
+                            .font(.headline)
+                            .padding(.bottom, 4)
+                        
+                        VStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Label("Wo/Was (z. B. Arztbesuch)", systemImage: "pencil")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                TextField("", text: $what)
+                                    .padding(10)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(CCDesign.card))
+                                    .textInputAutocapitalization(.words)
+                                    .disableAutocorrection(true)
                             }
-                            .frame(maxHeight: 150)
-                        }
-                    }
 
-                    DatePicker("Datum & Uhrzeit", selection: $date, displayedComponents: [.date, .hourAndMinute])
-                        .datePickerStyle(.compact)
-                }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Label("Adresse", systemImage: "mappin.and.ellipse")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                TextField("", text: $addressVM.queryFragment)
+                                    .padding(10)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(CCDesign.card))
+                                    .textInputAutocapitalization(.words)
+                                    .disableAutocorrection(true)
 
-                Section("Mitbringen (optional)") {
-                    Picker("Gegenstände", selection: $selectedItem) {
-                        ForEach(defaultBringItems, id: \.self) { item in
-                            Text(item).tag(item)
-                        }
-                        Text("+ Anderes hinzufügen...").tag("custom")
-                    }
-                    .onChange(of: selectedItem) { newValue in
-                        if newValue == "custom" {
-                            showAddCustomItem = true
-                        } else if !bringItems.contains(newValue) {
-                            bringItems.append(newValue)
-                        }
-                    }
-
-                    if !bringItems.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                ForEach(bringItems, id: \.self) { item in
-                                    Text(item)
-                                        .padding(8)
-                                        .background(Color.blue.opacity(0.15))
-                                        .cornerRadius(8)
-                                        .onTapGesture {
-                                            withAnimation {
-                                                bringItems.removeAll { $0 == item }
+                                if !addressVM.suggestions.isEmpty {
+                                    ScrollView {
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            ForEach(addressVM.suggestions, id: \.self) { suggestion in
+                                                Button {
+                                                    address = suggestion
+                                                    addressVM.queryFragment = suggestion
+                                                    addressVM.suggestions = []
+                                                } label: {
+                                                    Text(suggestion)
+                                                        .foregroundColor(.primary)
+                                                        .lineLimit(2)
+                                                        .padding(8)
+                                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                                        .background(RoundedRectangle(cornerRadius: 8).fill(CCDesign.background.opacity(0.5)))
+                                                }
                                             }
                                         }
+                                    }
+                                    .frame(maxHeight: 150)
                                 }
                             }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Label("Datum & Uhrzeit", systemImage: "calendar.badge.clock")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
+                                    .datePickerStyle(.compact)
+                                    .labelsHidden()
+                                    .padding(10)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(CCDesign.card))
+                            }
                         }
-                        .padding(.top, 4)
-                        Text("(Zum Entfernen tippen)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
                     }
+                    .padding(.vertical, 8)
                 }
+                .listRowBackground(CCDesign.background)
+                .listRowSeparator(.hidden)
+
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Mitbringen (optional)", systemImage: "bag")
+                            .font(.headline)
+                            .padding(.bottom, 4)
+
+                        Picker(selection: $selectedItem) {
+                            ForEach(defaultBringItems, id: \.self) { item in
+                                Text(item).tag(item)
+                            }
+                            Text("+ Anderes hinzufügen...").tag("custom")
+                        } label: {
+                            Text("Gegenstände")
+                        }
+                        .pickerStyle(.menu)
+                        .onChange(of: selectedItem) { newValue in
+                            if newValue == "custom" {
+                                showAddCustomItem = true
+                            } else if !bringItems.contains(newValue) {
+                                bringItems.append(newValue)
+                            }
+                            selectedItem = ""
+                        }
+
+                        if !bringItems.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(bringItems, id: \.self) { item in
+                                        Text(item)
+                                            .padding(8)
+                                            .background(Color.blue.opacity(0.15))
+                                            .cornerRadius(8)
+                                            .onTapGesture {
+                                                withAnimation {
+                                                    bringItems.removeAll { $0 == item }
+                                                }
+                                            }
+                                    }
+                                }
+                            }
+                            .padding(.top, 4)
+                            Text("(Zum Entfernen tippen)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+                .listRowBackground(CCDesign.background)
+                .listRowSeparator(.hidden)
                 .alert("Neuen Gegenstand hinzufügen", isPresented: $showAddCustomItem) {
                     TextField("Gegenstand", text: $customItem)
                     Button("Hinzufügen") {
@@ -103,11 +157,25 @@ struct AddEditAppointmentSheet: View {
                     Button("Abbrechen", role: .cancel) { customItem = "" }
                 }
 
-                Section("Notizen") {
-                    TextField("Bemerkungen (optional)", text: $notes, axis: .vertical)
-                        .lineLimit(2...4)
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Notizen", systemImage: "note.text")
+                            .font(.headline)
+                            .padding(.bottom, 4)
+
+                        TextField("Bemerkungen (optional)", text: $notes, axis: .vertical)
+                            .lineLimit(2...4)
+                            .padding(10)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(CCDesign.card))
+                    }
+                    .padding(.vertical, 8)
                 }
+                .listRowBackground(CCDesign.background)
+                .listRowSeparator(.hidden)
             }
+            .scrollContentBackground(.hidden)
+            .background(CCDesign.background)
+            .listStyle(.insetGrouped)
             .navigationTitle("Termin hinzufügen")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -137,12 +205,15 @@ struct AddEditAppointmentSheet: View {
                         dismiss()
                     }
                     .disabled(what.isEmpty || address.isEmpty)
+                    .tint(CCDesign.accent)
                 }
 
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") { dismiss() }
+                        .tint(CCDesign.accent)
                 }
             }
+            .toolbarBackground(CCDesign.card, for: .navigationBar)
             .onAppear {
                 if let editing = viewModel.editingAppointment {
                     what = editing.what

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import FirebaseAuth
 
 struct PatientSettingsView: View {
@@ -48,7 +49,7 @@ struct PatientSettingsView: View {
                     }
                 }
             }
-            .navigationTitle("Patienten-Einstellungen")
+            .navigationTitle("Einstellungen")
             .sheet(isPresented: $showEditProfile, onDismiss: {
                 Task { await appState.loadInitial() }
             }) {
@@ -72,7 +73,10 @@ struct PatientSettingsView: View {
     /// Anzeigename
     private var displayName: String {
         if let p = appState.currentPatient {
-            return "\(p.firstName) \(p.lastName)"
+            let first = p.firstName ?? ""
+            let last = p.lastName ?? ""
+            let fullName = "\(first) \(last)".trimmingCharacters(in: .whitespaces)
+            return fullName.isEmpty ? "Unbekannt" : fullName
         }
         return "Unbekannt"
     }

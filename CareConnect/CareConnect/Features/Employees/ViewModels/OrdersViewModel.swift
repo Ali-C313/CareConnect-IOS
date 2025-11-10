@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Combine
 import FirebaseCore
 
@@ -15,6 +16,7 @@ final class OrdersViewModel: ObservableObject {
     @Published var selectedState: OrderState = .aktuell
     @Published var errorMessage: String? = nil
     @Published var showError: Bool = false
+    @Published var isTrackingActive: Bool = false
     private let repository = FirebaseOrderRepository()
     
     // Sichtbare Liste (24h)
@@ -84,4 +86,15 @@ final class OrdersViewModel: ObservableObject {
     
     func employeeName(for id: String) -> String { id.replacingOccurrences(of: "_", with: " ") }
     func patientName(for id: String) -> String { id.replacingOccurrences(of: "_", with: " ") }
+    
+    func startLiveTracking(for userId: String?, orderId: String?) {
+        guard let userId, let orderId else { return }
+        EmployeeLocationManager.shared.startTracking(for: userId, orderId: orderId)
+        isTrackingActive = true
+    }
+    
+    func stopLiveTracking() {
+        EmployeeLocationManager.shared.stopTracking()
+        isTrackingActive = false
+    }
 }

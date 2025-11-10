@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import FirebaseFirestore
 
 struct PatientProfileView: View {
@@ -96,16 +97,20 @@ struct PatientProfileView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             // Telefon (tap to call)
                             if let phone = patient.phone, !phone.isEmpty {
-                                InfoButtonRow(system: "phone.fill", title: "Telefon", label: phone) {
-                                    if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) { UIApplication.shared.open(url) }
+                                InfoButtonRow(system: "phone.fill", title: "Telefon", value: phone, buttonTitle: "Anrufen") {
+                                    if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) {
+                                        UIApplication.shared.open(url)
+                                    }
                                 }
                             } else {
                                 InfoRow(system: "phone", title: "Telefon", value: "Keine Telefonnummer angegeben")
                             }
                             // E‑Mail (tap to compose)
                             if let email = patient.email, !email.isEmpty {
-                                InfoButtonRow(system: "envelope.fill", title: "E‑Mail", label: email) {
-                                    if let url = URL(string: "mailto:" + email) { UIApplication.shared.open(url) }
+                                InfoButtonRow(system: "envelope.fill", title: "E‑Mail", value: email, buttonTitle: "E-Mail senden") {
+                                    if let url = URL(string: "mailto:" + email) {
+                                        UIApplication.shared.open(url)
+                                    }
                                 }
                             } else {
                                 InfoRow(system: "envelope", title: "E‑Mail", value: "Keine E‑Mail‑Adresse angegeben")
@@ -315,8 +320,10 @@ struct PatientProfileView: View {
 
                         // Telefon (tappbar)
                         if let phone = contact.phone, !phone.isEmpty {
-                            InfoButtonRow(system: "phone.fill", title: "Telefon", label: phone) {
-                                if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) { UIApplication.shared.open(url) }
+                            InfoButtonRow(system: "phone.fill", title: "Telefon", value: phone, buttonTitle: "Anrufen") {
+                                if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) {
+                                    UIApplication.shared.open(url)
+                                }
                             }
                         } else {
                             InfoRow(system: "phone", title: "Telefon", value: "Keine Telefonnummer angegeben")
@@ -324,8 +331,10 @@ struct PatientProfileView: View {
 
                         // E-Mail (tappbar)
                         if let email = contact.email, !email.isEmpty {
-                            InfoButtonRow(system: "envelope.fill", title: "E‑Mail", label: email) {
-                                if let url = URL(string: "mailto:" + email) { UIApplication.shared.open(url) }
+                            InfoButtonRow(system: "envelope.fill", title: "E‑Mail", value: email, buttonTitle: "E-Mail senden") {
+                                if let url = URL(string: "mailto:" + email) {
+                                    UIApplication.shared.open(url)
+                                }
                             }
                         } else {
                             InfoRow(system: "envelope", title: "E‑Mail", value: "Keine E‑Mail‑Adresse angegeben")
@@ -333,9 +342,11 @@ struct PatientProfileView: View {
 
                         // Adresse (tappbar)
                         if let address = contact.address, !address.isEmpty {
-                            InfoButtonRow(system: "map.fill", title: "Adresse", label: address) {
+                            InfoButtonRow(system: "map.fill", title: "Adresse", value: address, buttonTitle: "In Karten öffnen") {
                                 let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                                if let url = URL(string: "http://maps.apple.com/?q=" + encoded) { UIApplication.shared.open(url) }
+                                if let url = URL(string: "http://maps.apple.com/?q=" + encoded) {
+                                    UIApplication.shared.open(url)
+                                }
                             }
                         } else {
                             InfoRow(system: "map", title: "Adresse", value: "Keine Adresse angegeben")

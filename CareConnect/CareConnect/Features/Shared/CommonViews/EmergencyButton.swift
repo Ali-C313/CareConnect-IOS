@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct EmergencyButton: View {
     @Binding var isPressed: Bool

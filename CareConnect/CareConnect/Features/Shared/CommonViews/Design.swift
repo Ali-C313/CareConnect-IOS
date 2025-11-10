@@ -6,16 +6,17 @@
 //
 
 import SwiftUI
+import Foundation
 
 enum CCDesign {
     // MARK: - Farben (Color Assets im Asset Catalog anlegen)
-    static let background = Color("CC/Background")           // z.B. #F5FAF8 (hell) / #0B1010 (dunkel)
-    static let card       = Color("CC/Card")                 // z.B. #FFFFFF / #111416
-    static let accent     = Color("CC/Accent")               // #1EAE98 (teal-grün)
-    static let info       = Color("CC/Info")                 // systemTeal
-    static let danger     = Color("CC/Danger")               // systemRed
-    static let textPrimary   = Color("CC/Text/Primary")      // Label-Farbe
-    static let textSecondary = Color("CC/Text/Secondary")    // Secondary Label
+    static let background = Color("Background")           // z.B. #F5FAF8 (hell) / #0B1010 (dunkel)
+    static let card       = Color("Card")                 // z.B. #FFFFFF / #111416
+    static let accent     = Color("Accent")               // #1EAE98 (teal-grün)
+    static let info       = Color("Info")                 // systemTeal
+    static let danger     = Color("Danger")               // systemRed
+    static let textPrimary   = Color("Primary")      // Label-Farbe
+    static let textSecondary = Color("Secondary")    // Secondary Label
 
     // MARK: - Layout
     static let radius: CGFloat = 16

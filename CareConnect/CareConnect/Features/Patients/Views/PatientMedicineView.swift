@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct PatientMedicineView: View {
     @StateObject private var viewModel = MedicineViewModel()

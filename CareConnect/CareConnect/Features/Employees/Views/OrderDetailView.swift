@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 import MapKit
@@ -33,8 +34,15 @@ struct OrderDetailView: View {
 
     var body: some View {
         ZStack {
+            // Consistent background for light/dark
+            CCDesign.background
+                .ignoresSafeArea()
+            // Add subtle gradient overlay for depth
             LinearGradient(
-                colors: [CCDesign.background, CCDesign.background.opacity(0.9)],
+                colors: [
+                    CCDesign.background.opacity(0.9),
+                    CCDesign.background.opacity(0.6)
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -42,28 +50,38 @@ struct OrderDetailView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
-
                     // MARK: - Header
                     headerSection
+                        .transition(.opacity.combined(with: .move(edge: .top)))
 
                     // MARK: - Live Karte
-                    if order.state == .aktuell {
-                        liveMapSection
+                    Group {
+                        if order.state == .aktuell {
+                            liveMapSection
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
                     }
 
                     // MARK: - Statusanzeige
                     statusSection
+                        .transition(.opacity)
 
                     // MARK: - Patientendaten
-                    if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }) {
-                        patientSection(patient)
+                    Group {
+                        if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }) {
+                            patientSection(patient)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        }
                     }
 
                     // MARK: - Aktionen
                     actionSection
+                        .transition(.opacity)
                 }
                 .padding()
                 .padding(.bottom, 24)
+                .animation(.easeInOut(duration: 0.35), value: order.state)
+                .animation(.easeInOut(duration: 0.35), value: etaText)
             }
 
             if isProcessing {
@@ -107,39 +125,55 @@ struct OrderDetailView: View {
         VStack(spacing: 16) {
             HStack(alignment: .center, spacing: 16) {
                 Circle()
-                    .fill(Color.accentColor.opacity(0.15))
+                    .fill(CCDesign.accent.opacity(0.15))
                     .frame(width: 70, height: 70)
                     .overlay(
                         Image(systemName: "person.text.rectangle.fill")
                             .font(.system(size: 28))
-                            .foregroundColor(.accentColor)
+                            .foregroundStyle(CCDesign.accent)
                     )
-
                 VStack(alignment: .leading, spacing: 4) {
                     Text(order.patientName)
                         .font(.title3.bold())
-                        .foregroundColor(CCDesign.textPrimary)
+                        .foregroundStyle(CCDesign.textPrimary)
                     Text("Patientenauftrag")
-                        .foregroundColor(.secondary)
                         .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
             }
-
             if let notes = order.notes, !notes.isEmpty {
                 Text(notes.joined(separator: ", "))
                     .font(.body)
-                    .foregroundColor(CCDesign.textPrimary)
+                    .foregroundStyle(CCDesign.textPrimary)
                     .multilineTextAlignment(.leading)
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(CCDesign.card.opacity(0.9))
+                    .background(
+                        ZStack {
+                            CCDesign.card.opacity(0.8)
+                            LinearGradient(
+                                colors: [Color.clear, CCDesign.accent.opacity(0.06)],
+                                startPoint: .top, endPoint: .bottom)
+                        }
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         }
         .padding()
-        .background(CCDesign.card)
+        .background(
+            ZStack {
+                CCDesign.card.opacity(0.8)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .shadow(color: Color.black.opacity(0.07), radius: 4, x: 0, y: 2)
+                .background(.ultraThinMaterial)
+                LinearGradient(
+                    colors: [Color.white.opacity(0.08), Color.clear],
+                    startPoint: .top, endPoint: .bottom)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+            }
+        )
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
     }
@@ -148,25 +182,30 @@ struct OrderDetailView: View {
     private var statusSection: some View {
         HStack {
             Image(systemName: icon(for: order.state))
-                .foregroundColor(order.state.color)
+                .foregroundStyle(order.state.color)
                 .font(.system(size: 34))
                 .padding(8)
-                .background(order.state.color.opacity(0.15))
-                .clipShape(Circle())
-
+                .background(order.state.color.opacity(0.15), in: Circle())
             VStack(alignment: .leading, spacing: 4) {
                 Text("Status")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                 Text(order.state.displayName)
-                    .font(.headline)
-                    .foregroundColor(order.state.color)
+                    .font(.title3.bold())
+                    .foregroundStyle(order.state.color)
             }
-
             Spacer()
         }
         .padding()
-        .background(CCDesign.card)
+        .background(
+            ZStack {
+                CCDesign.card.opacity(0.8)
+                .background(.ultraThinMaterial)
+                LinearGradient(
+                    colors: [Color.clear, order.state.color.opacity(0.05)],
+                    startPoint: .top, endPoint: .bottom)
+            }
+        )
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
     }
@@ -175,31 +214,38 @@ struct OrderDetailView: View {
     private var liveMapSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Image(systemName: "location.circle.fill").foregroundColor(.blue)
+                Image(systemName: "location.circle.fill")
+                    .foregroundStyle(.blue)
                 Text("Mitarbeiter ist unterwegs")
-                    .font(.headline)
-                    .foregroundColor(CCDesign.textPrimary)
+                    .font(.title3.bold())
+                    .foregroundStyle(CCDesign.textPrimary)
                 Spacer()
-                if let etaText { Text(etaText).font(.subheadline).foregroundColor(.secondary) }
+                if let etaText {
+                    Text(etaText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .transition(.opacity)
+                }
             }
-
             ZStack(alignment: .top) {
                 Map(coordinateRegion: $region, annotationItems: mapAnnotations()) { item in
                     MapMarker(coordinate: item.coordinate, tint: item.tint)
                 }
                 .frame(height: 260)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .shadow(color: Color.black.opacity(0.12), radius: 7, x: 0, y: 4)
                 if let etaText {
                     Text("Ankunft: \(etaText)")
                         .font(.subheadline.bold())
+                        .foregroundStyle(CCDesign.textPrimary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(.ultraThinMaterial, in: Capsule())
                         .padding(10)
+                        .transition(.opacity)
+                        .animation(.easeInOut(duration: 0.3), value: etaText)
                 }
             }
-
             HStack {
                 Button {
                     if let p = patientCoordinate {
@@ -211,12 +257,22 @@ struct OrderDetailView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(CCDesign.accent)
+                .buttonBorderShape(.roundedRectangle(radius: 14))
             }
         }
         .padding()
-        .background(CCDesign.card)
+        .background(
+            ZStack {
+                CCDesign.card.opacity(0.8)
+                .background(.ultraThinMaterial)
+                LinearGradient(
+                    colors: [Color.clear, CCDesign.accent.opacity(0.05)],
+                    startPoint: .top, endPoint: .bottom)
+            }
+        )
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
+        .shadow(color: Color.black.opacity(0.09), radius: 7, x: 0, y: 4)
     }
 
     // MARK: - Patientendaten
@@ -225,89 +281,134 @@ struct OrderDetailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "person.crop.circle.badge.checkmark")
-                        .foregroundColor(.teal)
+                        .foregroundStyle(.teal)
                         .font(.system(size: 22))
                     Text("Patientendaten")
-                        .font(.headline)
-                        .foregroundColor(CCDesign.textPrimary)
+                        .font(.title3.bold())
+                        .foregroundStyle(CCDesign.textPrimary)
                     Spacer()
                 }
-
                 Divider()
-
                 // Name + Alter
                 VStack(alignment: .leading, spacing: 6) {
                     Text(patient.name)
                         .font(.title3.bold())
-                    if let age = patient.age { Text("\(age) Jahre").foregroundColor(.secondary) }
+                        .foregroundStyle(CCDesign.textPrimary)
+                    if let age = patient.age {
+                        Text("\(age) Jahre")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-
                 // Kontakt
                 VStack(alignment: .leading, spacing: 8) {
                     if let phone = patient.phone, !phone.isEmpty {
-                        Button { if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) { UIApplication.shared.open(url) } } label: {
+                        Button {
+                            if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
                             Label(phone, systemImage: "phone.fill")
                         }
+                        .tint(CCDesign.accent)
+                        .buttonBorderShape(.roundedRectangle(radius: 8))
                     }
                     if let email = patient.email, !email.isEmpty {
-                        Button { if let url = URL(string: "mailto:" + email) { UIApplication.shared.open(url) } } label: {
+                        Button {
+                            if let url = URL(string: "mailto:" + email) {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
                             Label(email, systemImage: "envelope.fill")
                         }
+                        .tint(CCDesign.accent)
+                        .buttonBorderShape(.roundedRectangle(radius: 8))
                     }
                     if let addr = addressLine(patient), !addr.isEmpty {
                         Button {
                             let encoded = addr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                            if let url = URL(string: "http://maps.apple.com/?q=" + encoded) { UIApplication.shared.open(url) }
+                            if let url = URL(string: "http://maps.apple.com/?q=" + encoded) {
+                                UIApplication.shared.open(url)
+                            }
                         } label: {
                             Label(addr, systemImage: "map.fill")
                                 .lineLimit(2)
                         }
+                        .tint(CCDesign.accent)
+                        .buttonBorderShape(.roundedRectangle(radius: 8))
                     }
                 }
-
                 // Medikamente
                 if let meds = patient.medications, !meds.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Medikamente").font(.subheadline.bold())
-                        ForEach(meds) { med in Text("• \(med.name)") }
+                        Text("Medikamente")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(CCDesign.textPrimary)
+                        ForEach(meds) { med in
+                            Text("• \(med.name)")
+                                .font(.subheadline)
+                                .foregroundStyle(CCDesign.textPrimary)
+                        }
                     }
                 }
-
                 // Allergien
                 if let allergies = patient.allergies, !allergies.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Allergien").font(.subheadline.bold())
+                        Text("Allergien")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(CCDesign.textPrimary)
                         Text(allergies)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
-
                 // Vorgeschichte
                 if let mh = patient.medicalHistory, !mh.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Medizinische Vorgeschichte").font(.subheadline.bold())
+                        Text("Medizinische Vorgeschichte")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(CCDesign.textPrimary)
                         Text(mh)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
-
                 // Notizen
                 if let notes = patient.notes, !notes.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Notizen").font(.subheadline.bold())
+                        Text("Notizen")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(CCDesign.textPrimary)
                         Text(notes)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
-
                 // Historie
                 if let history = patient.history, !history.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Historie").font(.subheadline.bold())
-                        ForEach(history, id: \.self) { entry in Text("• \(entry)") }
+                        Text("Historie")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(CCDesign.textPrimary)
+                        ForEach(history, id: \.self) { entry in
+                            Text("• \(entry)")
+                                .font(.subheadline)
+                                .foregroundStyle(CCDesign.textPrimary)
+                        }
                     }
                 }
             }
         }
         .padding()
-        .background(CCDesign.card)
+        .background(
+            ZStack {
+                CCDesign.card.opacity(0.8)
+                .background(.ultraThinMaterial)
+                LinearGradient(
+                    colors: [Color.clear, CCDesign.accent.opacity(0.04)],
+                    startPoint: .top, endPoint: .bottom)
+            }
+        )
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
     }
@@ -316,7 +417,7 @@ struct OrderDetailView: View {
     private var actionSection: some View {
         VStack(spacing: 16) {
             if order.state == .offen {
-                bigButton(title: "Auftrag annehmen", color: .blue, icon: "checkmark.circle.fill") {
+                bigButton(title: "Auftrag annehmen", color: CCDesign.accent, icon: "checkmark.circle.fill") {
                     await accept()
                 }
             } else if order.state == .aktuell {
@@ -325,11 +426,19 @@ struct OrderDetailView: View {
                 }
             } else if order.state == .erledigt {
                 Label("✅ Auftrag abgeschlossen", systemImage: "seal.fill")
-                    .font(.headline)
-                    .foregroundColor(.green)
+                    .font(.title3.bold())
+                    .foregroundStyle(.green)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(CCDesign.card)
+                    .background(
+                        ZStack {
+                            CCDesign.card.opacity(0.8)
+                            .background(.ultraThinMaterial)
+                            LinearGradient(
+                                colors: [Color.clear, .green.opacity(0.07)],
+                                startPoint: .top, endPoint: .bottom)
+                        }
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .shadow(radius: 3)
             }
@@ -347,15 +456,17 @@ struct OrderDetailView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon)
-                Text(title).font(.headline.bold())
+                Text(title)
+                    .font(.title3.bold())
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(color)
-            .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: color.opacity(0.4), radius: 6, x: 0, y: 3)
         }
+        .buttonStyle(.borderedProminent)
+        .tint(color)
+        .buttonBorderShape(.roundedRectangle(radius: 16))
+        .shadow(color: color.opacity(0.17), radius: 6, x: 0, y: 3)
+        .foregroundStyle(.white)
     }
 
     // MARK: - Firestore Aktionen
