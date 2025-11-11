@@ -7,9 +7,10 @@
 
 import Foundation
 import SwiftUI
+import FirebaseFirestore
 
 struct AppointmentEntry: Identifiable, Codable, Equatable {
-    let id: UUID
+    @DocumentID var id: String?
     var what: String            // Wo/Was (z. B. „Arzttermin – Orthopädie“)
     var address: String         // Adresse
     var date: Date              // Datum + Uhrzeit in einem Feld
@@ -17,14 +18,12 @@ struct AppointmentEntry: Identifiable, Codable, Equatable {
     var notes: String?          // optionale Bemerkung
 
     init(
-        id: UUID = UUID(),
         what: String,
         address: String,
         date: Date,
         bringItems: [String] = [],
         notes: String? = nil
     ) {
-        self.id = id
         self.what = what
         self.address = address
         self.date = date

@@ -31,14 +31,22 @@ struct PatientOrdersView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Label("Aktiver Auftrag", systemImage: "location.fill")
                             .font(.title3.bold())
-                            .foregroundColor(.primary)
+                            .foregroundColor(CCDesign.textPrimary)
                             .padding(.horizontal)
+                            .padding(.top, 8)
                         
                         if let activeOrder = viewModel.activeOrder {
                             VStack(alignment: .leading, spacing: 16) {
                                 if let employeeLocation = viewModel.employeeCoordinate {
-                                    // TODO: Replace this placeholder "destination" with patient's real coordinates from your model
-                                    let destination = CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050) // Berlin as placeholder
+                                    // Ziel berechnen
+                                    let destination: CLLocationCoordinate2D = {
+                                        if let patientLat = activeOrder.patientLatitude,
+                                           let patientLon = activeOrder.patientLongitude {
+                                            return CLLocationCoordinate2D(latitude: patientLat, longitude: patientLon)
+                                        } else {
+                                            return CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050)
+                                        }
+                                    }()
 
                                     Map(position: $cameraPosition) {
                                         if let route {
@@ -91,10 +99,10 @@ struct PatientOrdersView: View {
                                     }
                                 } else {
                                     Text("Standort des Mitarbeiters nicht verfügbar")
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(CCDesign.textSecondary)
                                         .frame(height: 240)
                                         .frame(maxWidth: .infinity)
-                                        .background(Color(.systemGray6))
+                                        .background(CCDesign.card.opacity(0.6))
                                         .clipShape(RoundedRectangle(cornerRadius: 16))
                                         .padding(.horizontal)
                                 }
@@ -102,18 +110,17 @@ struct PatientOrdersView: View {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("Mitarbeiter: \(activeOrder.employeeName)")
                                         .font(.headline)
+                                        .foregroundColor(CCDesign.textPrimary)
                                     Text("ETA: \(activeOrder.etaFormatted)")
                                         .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(CCDesign.textSecondary)
                                     Text("Telefon: \(activeOrder.employeePhone)")
                                         .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(CCDesign.textSecondary)
                                 }
                                 .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(CCDesign.card)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .shadow(color: Color.primary.opacity(0.08), radius: 4, y: 2)
+                                .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                                .shadow(color: Color.primary.opacity(0.08), radius: 6, y: 3)
                                 .padding(.horizontal)
                             }
                             .onAppear {
@@ -127,31 +134,31 @@ struct PatientOrdersView: View {
                         } else {
                             Text("Kein aktiver Auftrag verfügbar")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(CCDesign.textSecondary)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(CCDesign.card)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
                                 .shadow(color: Color.primary.opacity(0.05), radius: 4)
                                 .padding(.horizontal)
                         }
                     }
                     .padding(.vertical, 16)
-                    .background(CCDesign.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(CCDesign.card))
                     .padding(.horizontal)
 
                     // Offene Aufträge Section
                     VStack(alignment: .leading, spacing: 16) {
                         Label("Offene Aufträge", systemImage: "clock.fill")
                             .font(.title3.bold())
-                            .foregroundColor(.primary)
+                            .foregroundColor(CCDesign.textPrimary)
                             .padding(.horizontal)
+                            .padding(.top, 8)
                         
                         if viewModel.openOrders.isEmpty {
                             Text("Keine offenen Aufträge.")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(CCDesign.textSecondary)
                                 .padding(.horizontal)
                         } else {
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -159,9 +166,8 @@ struct PatientOrdersView: View {
                                     ForEach(viewModel.openOrders) { order in
                                         OrderCardView(order: order)
                                             .padding()
-                                            .background(CCDesign.card)
-                                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                                            .shadow(color: Color.primary.opacity(0.05), radius: 6, y: 3)
+                                            .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                                            .shadow(color: Color.primary.opacity(0.08), radius: 6, y: 3)
                                     }
                                 }
                                 .padding(.horizontal)
@@ -169,21 +175,22 @@ struct PatientOrdersView: View {
                         }
                     }
                     .padding(.vertical, 16)
-                    .background(CCDesign.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(CCDesign.card))
                     .padding(.horizontal)
 
                     // Erledigte Aufträge Section
                     VStack(alignment: .leading, spacing: 16) {
                         Label("Erledigte Aufträge", systemImage: "checkmark.circle.fill")
                             .font(.title3.bold())
-                            .foregroundColor(.primary)
+                            .foregroundColor(CCDesign.textPrimary)
                             .padding(.horizontal)
+                            .padding(.top, 8)
                         
                         if viewModel.historyOrders.isEmpty {
                             Text("Keine erledigten Aufträge.")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(CCDesign.textSecondary)
                                 .padding(.horizontal)
                         } else {
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -191,9 +198,8 @@ struct PatientOrdersView: View {
                                     ForEach(viewModel.historyOrders) { order in
                                         OrderCardView(order: order)
                                             .padding()
-                                            .background(CCDesign.card)
-                                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                                            .shadow(color: Color.primary.opacity(0.05), radius: 6, y: 3)
+                                            .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                                            .shadow(color: Color.primary.opacity(0.08), radius: 6, y: 3)
                                     }
                                 }
                                 .padding(.horizontal)
@@ -201,11 +207,18 @@ struct PatientOrdersView: View {
                         }
                     }
                     .padding(.vertical, 16)
-                    .background(CCDesign.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(CCDesign.card))
                     .padding(.horizontal)
                 }
                 .padding(.vertical, 24)
+                .onAppear {
+                    if let patientId = Auth.auth().currentUser?.uid {
+                        print(patientId)
+                        viewModel.fetchActiveOrder(for: patientId)
+                        print(viewModel.activeOrder)
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(CCDesign.background.ignoresSafeArea())

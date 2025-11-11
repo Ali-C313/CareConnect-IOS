@@ -16,22 +16,25 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
-            
+
             NavigationStack { PatientsListView() }
                 .tabItem {
                     Label("Patienten", systemImage: "person.3.fill")
                 }
-            
+
             NavigationStack { OrdersView() }
                 .tabItem {
                     Label("Aufträge", systemImage: "doc.text.fill")
                 }
-            
+
             NavigationStack { EmployeeSettingsView() }
                 .tabItem {
-                    Label("Einstellungen", systemImage: "gear")
+                    Label("Einstellungen", systemImage: "gearshape.fill")
                 }
         }
+        .accentColor(CCDesign.accent)
+        .background(CCDesign.background.ignoresSafeArea())
+        .tint(CCDesign.accent)
     }
 }
 

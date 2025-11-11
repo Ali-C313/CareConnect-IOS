@@ -39,6 +39,8 @@ struct CareConnectApp: App {
                 print("❌ Error fetching FCM token: \(error.localizedDescription)")
             }
         }
+        // Standortberechtigungen anfordern beim App-Start (nach Firebase-Setup)
+        EmployeeLocationManager.shared.requestPermissionIfNeeded()
     }
 
     /// Start-View

@@ -37,11 +37,11 @@ struct OrderDetailView: View {
             // Consistent background for light/dark
             CCDesign.background
                 .ignoresSafeArea()
-            // Add subtle gradient overlay for depth
+            // Subtle unified gradient for depth
             LinearGradient(
                 colors: [
-                    CCDesign.background.opacity(0.9),
-                    CCDesign.background.opacity(0.6)
+                    CCDesign.background.opacity(0.95),
+                    CCDesign.accent.opacity(0.07)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -49,40 +49,38 @@ struct OrderDetailView: View {
             .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 28) {
-                    // MARK: - Header
+                VStack(spacing: 22) {
+                    // MARK: - Header Card
                     headerSection
                         .transition(.opacity.combined(with: .move(edge: .top)))
 
-                    // MARK: - Live Karte
-                    Group {
-                        if order.state == .aktuell {
-                            liveMapSection
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
-                    }
-
-                    // MARK: - Statusanzeige
+                    // MARK: - Status Card
                     statusSection
-                        .transition(.opacity)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
 
-                    // MARK: - Patientendaten
-                    Group {
-                        if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }) {
-                            patientSection(patient)
-                                .transition(.opacity.combined(with: .move(edge: .bottom)))
-                        }
+                    // MARK: - Live Map Card
+                    if order.state == .aktuell {
+                        liveMapSection
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
 
-                    // MARK: - Aktionen
+                    // MARK: - Patient Card
+                    if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }) {
+                        patientSection(patient)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+
+                    // MARK: - Action Card
                     actionSection
-                        .transition(.opacity)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                .padding()
-                .padding(.bottom, 24)
+                .padding(.horizontal)
+                .padding(.top, 20)
+                .padding(.bottom, 32)
                 .animation(.easeInOut(duration: 0.35), value: order.state)
                 .animation(.easeInOut(duration: 0.35), value: etaText)
             }
+            .scrollContentBackground(.hidden)
 
             if isProcessing {
                 ZStack {
@@ -122,17 +120,24 @@ struct OrderDetailView: View {
 
     // MARK: - Header
     private var headerSection: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .center, spacing: 16) {
-                Circle()
-                    .fill(CCDesign.accent.opacity(0.15))
-                    .frame(width: 70, height: 70)
-                    .overlay(
-                        Image(systemName: "person.text.rectangle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(CCDesign.accent)
-                    )
-                VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .center, spacing: 18) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [CCDesign.accent.opacity(0.23), CCDesign.card.opacity(0.6)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 74, height: 74)
+                        .shadow(color: CCDesign.accent.opacity(0.17), radius: 7, x: 0, y: 3)
+                    Image(systemName: "person.text.rectangle.fill")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundStyle(CCDesign.accent)
+                }
+                VStack(alignment: .leading, spacing: 5) {
                     Text(order.patientName)
                         .font(.title3.bold())
                         .foregroundStyle(CCDesign.textPrimary)
@@ -147,45 +152,52 @@ struct OrderDetailView: View {
                     .font(.body)
                     .foregroundStyle(CCDesign.textPrimary)
                     .multilineTextAlignment(.leading)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        ZStack {
-                            CCDesign.card.opacity(0.8)
-                            LinearGradient(
-                                colors: [Color.clear, CCDesign.accent.opacity(0.06)],
-                                startPoint: .top, endPoint: .bottom)
-                        }
+                        LinearGradient(
+                            colors: [CCDesign.card.opacity(0.92), CCDesign.accent.opacity(0.09)],
+                            startPoint: .top, endPoint: .bottom)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
             }
         }
-        .padding()
+        .padding(16)
         .background(
             ZStack {
-                CCDesign.card.opacity(0.8)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: Color.black.opacity(0.07), radius: 4, x: 0, y: 2)
-                .background(.ultraThinMaterial)
+                LinearGradient(
+                    colors: [
+                        CCDesign.accent.opacity(0.10),
+                        CCDesign.card.opacity(0.96)
+                    ],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                CCDesign.card.opacity(0.92)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
                 LinearGradient(
                     colors: [Color.white.opacity(0.08), Color.clear],
                     startPoint: .top, endPoint: .bottom)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: Color.black.opacity(0.07), radius: 7, x: 0, y: 3)
     }
 
     // MARK: - Status
     private var statusSection: some View {
-        HStack {
-            Image(systemName: icon(for: order.state))
-                .foregroundStyle(order.state.color)
-                .font(.system(size: 34))
-                .padding(8)
-                .background(order.state.color.opacity(0.15), in: Circle())
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(order.state.color.opacity(0.16))
+                    .frame(width: 54, height: 54)
+                    .shadow(color: order.state.color.opacity(0.24), radius: 10, x: 0, y: 0)
+                Image(systemName: icon(for: order.state))
+                    .foregroundStyle(order.state.color)
+                    .font(.system(size: 28, weight: .semibold))
+            }
             VStack(alignment: .leading, spacing: 4) {
                 Text("Status")
                     .font(.subheadline)
@@ -196,24 +208,25 @@ struct OrderDetailView: View {
             }
             Spacer()
         }
-        .padding()
+        .padding(16)
         .background(
             ZStack {
-                CCDesign.card.opacity(0.8)
-                .background(.ultraThinMaterial)
+                CCDesign.card.opacity(0.93)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 LinearGradient(
-                    colors: [Color.clear, order.state.color.opacity(0.05)],
-                    startPoint: .top, endPoint: .bottom)
+                    colors: [order.state.color.opacity(0.07), Color.clear],
+                    startPoint: .topLeading, endPoint: .bottomTrailing)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: order.state.color.opacity(0.08), radius: 6, x: 0, y: 3)
     }
 
     // MARK: - Live Map Section
     private var liveMapSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
                 Image(systemName: "location.circle.fill")
                     .foregroundStyle(.blue)
                 Text("Mitarbeiter ist unterwegs")
@@ -231,17 +244,26 @@ struct OrderDetailView: View {
                 Map(coordinateRegion: $region, annotationItems: mapAnnotations()) { item in
                     MapMarker(coordinate: item.coordinate, tint: item.tint)
                 }
-                .frame(height: 260)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                .shadow(color: Color.black.opacity(0.12), radius: 7, x: 0, y: 4)
+                .frame(height: 240)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(CCDesign.accent.opacity(0.10), lineWidth: 1.2)
+                )
+                .shadow(color: Color.black.opacity(0.10), radius: 7, x: 0, y: 4)
+                LinearGradient(
+                    colors: [CCDesign.background.opacity(0.10), Color.clear],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20))
                 if let etaText {
                     Text("Ankunft: \(etaText)")
                         .font(.subheadline.bold())
                         .foregroundStyle(CCDesign.textPrimary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
                         .background(.ultraThinMaterial, in: Capsule())
-                        .padding(10)
+                        .padding(12)
                         .transition(.opacity)
                         .animation(.easeInOut(duration: 0.3), value: etaText)
                 }
@@ -258,17 +280,18 @@ struct OrderDetailView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(CCDesign.accent)
-                .buttonBorderShape(.roundedRectangle(radius: 14))
+                .buttonBorderShape(.roundedRectangle(radius: 16))
             }
         }
-        .padding()
+        .padding(16)
         .background(
             ZStack {
-                CCDesign.card.opacity(0.8)
-                .background(.ultraThinMaterial)
+                CCDesign.card.opacity(0.95)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 LinearGradient(
-                    colors: [Color.clear, CCDesign.accent.opacity(0.05)],
+                    colors: [Color.clear, CCDesign.accent.opacity(0.07)],
                     startPoint: .top, endPoint: .bottom)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
@@ -277,20 +300,24 @@ struct OrderDetailView: View {
 
     // MARK: - Patientendaten
     private func patientSection(_ patient: Patient) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "person.crop.circle.badge.checkmark")
-                        .foregroundStyle(.teal)
-                        .font(.system(size: 22))
-                    Text("Patientendaten")
-                        .font(.title3.bold())
-                        .foregroundStyle(CCDesign.textPrimary)
-                    Spacer()
-                }
-                Divider()
-                // Name + Alter
-                VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                Image(systemName: "person.crop.circle.badge.checkmark")
+                    .foregroundStyle(.teal)
+                    .font(.system(size: 22, weight: .medium))
+                Text("Patientendaten")
+                    .font(.title3.bold())
+                    .foregroundStyle(CCDesign.textPrimary)
+                Spacer()
+            }
+            .padding(.bottom, 4)
+            Divider()
+                .padding(.vertical, 6)
+            // Name + Alter
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "person.fill")
+                    .foregroundStyle(CCDesign.accent)
+                VStack(alignment: .leading, spacing: 2) {
                     Text(patient.name)
                         .font(.title3.bold())
                         .foregroundStyle(CCDesign.textPrimary)
@@ -300,47 +327,61 @@ struct OrderDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                // Kontakt
-                VStack(alignment: .leading, spacing: 8) {
-                    if let phone = patient.phone, !phone.isEmpty {
-                        Button {
-                            if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) {
-                                UIApplication.shared.open(url)
-                            }
-                        } label: {
-                            Label(phone, systemImage: "phone.fill")
-                        }
-                        .tint(CCDesign.accent)
-                        .buttonBorderShape(.roundedRectangle(radius: 8))
+            }
+            .padding(.bottom, 6)
+            // Kontakt
+            if let phone = patient.phone, !phone.isEmpty {
+                Divider().padding(.vertical, 4)
+                Button {
+                    if let url = URL(string: "tel://" + phone.replacingOccurrences(of: " ", with: "")) {
+                        UIApplication.shared.open(url)
                     }
-                    if let email = patient.email, !email.isEmpty {
-                        Button {
-                            if let url = URL(string: "mailto:" + email) {
-                                UIApplication.shared.open(url)
-                            }
-                        } label: {
-                            Label(email, systemImage: "envelope.fill")
-                        }
-                        .tint(CCDesign.accent)
-                        .buttonBorderShape(.roundedRectangle(radius: 8))
-                    }
-                    if let addr = addressLine(patient), !addr.isEmpty {
-                        Button {
-                            let encoded = addr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                            if let url = URL(string: "http://maps.apple.com/?q=" + encoded) {
-                                UIApplication.shared.open(url)
-                            }
-                        } label: {
-                            Label(addr, systemImage: "map.fill")
-                                .lineLimit(2)
-                        }
-                        .tint(CCDesign.accent)
-                        .buttonBorderShape(.roundedRectangle(radius: 8))
-                    }
+                } label: {
+                    Label(phone, systemImage: "phone.fill")
+                        .font(.body)
+                        .foregroundStyle(CCDesign.textPrimary)
                 }
-                // Medikamente
-                if let meds = patient.medications, !meds.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
+                .buttonStyle(.borderedProminent)
+                .tint(CCDesign.accent)
+                .buttonBorderShape(.roundedRectangle(radius: 12))
+            }
+            if let email = patient.email, !email.isEmpty {
+                Button {
+                    if let url = URL(string: "mailto:" + email) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Label(email, systemImage: "envelope.fill")
+                        .font(.body)
+                        .foregroundStyle(CCDesign.textPrimary)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(CCDesign.accent)
+                .buttonBorderShape(.roundedRectangle(radius: 12))
+            }
+            if let addr = addressLine(patient), !addr.isEmpty {
+                Button {
+                    let encoded = addr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                    if let url = URL(string: "http://maps.apple.com/?q=" + encoded) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Label(addr, systemImage: "map.fill")
+                        .font(.body)
+                        .foregroundStyle(CCDesign.textPrimary)
+                        .lineLimit(2)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(CCDesign.accent)
+                .buttonBorderShape(.roundedRectangle(radius: 12))
+            }
+            // Medikamente
+            if let meds = patient.medications, !meds.isEmpty {
+                Divider().padding(.vertical, 4)
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "pills.fill")
+                        .foregroundStyle(.purple)
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Medikamente")
                             .font(.subheadline.bold())
                             .foregroundStyle(CCDesign.textPrimary)
@@ -351,9 +392,14 @@ struct OrderDetailView: View {
                         }
                     }
                 }
-                // Allergien
-                if let allergies = patient.allergies, !allergies.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
+            }
+            // Allergien
+            if let allergies = patient.allergies, !allergies.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Divider().padding(.vertical, 4)
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Allergien")
                             .font(.subheadline.bold())
                             .foregroundStyle(CCDesign.textPrimary)
@@ -362,9 +408,14 @@ struct OrderDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                // Vorgeschichte
-                if let mh = patient.medicalHistory, !mh.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
+            }
+            // Vorgeschichte
+            if let mh = patient.medicalHistory, !mh.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Divider().padding(.vertical, 4)
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "heart.text.square.fill")
+                        .foregroundStyle(.red)
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Medizinische Vorgeschichte")
                             .font(.subheadline.bold())
                             .foregroundStyle(CCDesign.textPrimary)
@@ -373,9 +424,14 @@ struct OrderDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                // Notizen
-                if let notes = patient.notes, !notes.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
+            }
+            // Notizen
+            if let notes = patient.notes, !notes.isEmpty {
+                Divider().padding(.vertical, 4)
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "note.text")
+                        .foregroundStyle(.blue)
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Notizen")
                             .font(.subheadline.bold())
                             .foregroundStyle(CCDesign.textPrimary)
@@ -384,9 +440,14 @@ struct OrderDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                // Historie
-                if let history = patient.history, !history.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
+            }
+            // Historie
+            if let history = patient.history, !history.isEmpty {
+                Divider().padding(.vertical, 4)
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .foregroundStyle(.gray)
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Historie")
                             .font(.subheadline.bold())
                             .foregroundStyle(CCDesign.textPrimary)
@@ -399,23 +460,29 @@ struct OrderDetailView: View {
                 }
             }
         }
-        .padding()
+        .padding(16)
         .background(
             ZStack {
-                CCDesign.card.opacity(0.8)
-                .background(.ultraThinMaterial)
                 LinearGradient(
-                    colors: [Color.clear, CCDesign.accent.opacity(0.04)],
+                    colors: [
+                        CCDesign.card.opacity(0.97),
+                        CCDesign.accent.opacity(0.09)
+                    ],
                     startPoint: .top, endPoint: .bottom)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                LinearGradient(
+                    colors: [Color.clear, CCDesign.accent.opacity(0.05)],
+                    startPoint: .top, endPoint: .bottom)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 3)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: Color.black.opacity(0.07), radius: 6, x: 0, y: 3)
     }
 
     // MARK: - Aktionen
     private var actionSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             if order.state == .offen {
                 bigButton(title: "Auftrag annehmen", color: CCDesign.accent, icon: "checkmark.circle.fill") {
                     await accept()
@@ -425,24 +492,30 @@ struct OrderDetailView: View {
                     showCompletionAlert = true
                 }
             } else if order.state == .erledigt {
-                Label("✅ Auftrag abgeschlossen", systemImage: "seal.fill")
+                Label("Auftrag abgeschlossen", systemImage: "checkmark.seal.fill")
                     .font(.title3.bold())
                     .foregroundStyle(.green)
                     .frame(maxWidth: .infinity)
-                    .padding()
+                    .padding(.vertical, 12)
                     .background(
                         ZStack {
-                            CCDesign.card.opacity(0.8)
-                            .background(.ultraThinMaterial)
+                            CCDesign.card.opacity(0.92)
                             LinearGradient(
-                                colors: [Color.clear, .green.opacity(0.07)],
+                                colors: [Color.clear, .green.opacity(0.08)],
                                 startPoint: .top, endPoint: .bottom)
                         }
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .shadow(radius: 3)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .shadow(color: Color.green.opacity(0.11), radius: 4, x: 0, y: 2)
             }
         }
+        .padding(16)
+        .background(
+            CCDesign.card.opacity(0.96)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
 
     private func bigButton(title: String, color: Color, icon: String, action: @escaping () async -> Void) -> some View {
@@ -459,14 +532,15 @@ struct OrderDetailView: View {
                 Text(title)
                     .font(.title3.bold())
             }
-            .padding()
+            .padding(.vertical, 14)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
         .tint(color)
-        .buttonBorderShape(.roundedRectangle(radius: 16))
-        .shadow(color: color.opacity(0.17), radius: 6, x: 0, y: 3)
+        .buttonBorderShape(.roundedRectangle(radius: 18))
+        .shadow(color: color.opacity(0.16), radius: 7, x: 0, y: 3)
         .foregroundStyle(.white)
+        .font(.title3.bold())
     }
 
     // MARK: - Firestore Aktionen

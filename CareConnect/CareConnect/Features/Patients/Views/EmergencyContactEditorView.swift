@@ -19,120 +19,131 @@ struct EmergencyContactEditorView: View {
     /// UI-Inhalt
     var body: some View {
         NavigationStack {
-            Form {
-                Section(header: Text("Allgemein")) {
-                    // Name
-                    HStack {
-                        Image(systemName: "person.fill")
-                            .foregroundColor(.accentColor)
-                        TextField("Name", text: $viewModel.newEmergencyContact.name)
-                    }
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Allgemein
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Allgemein", systemImage: "person.text.rectangle")
+                            .font(.headline)
+                            .foregroundColor(CCDesign.textPrimary)
 
-                    // Beziehung
-                    HStack {
-                        Image(systemName: "heart.text.square")
-                            .foregroundColor(.accentColor)
-                        TextField("Beziehung (z. B. Ehepartner)", text: Binding(
-                            get: { viewModel.newEmergencyContact.relation ?? "" },
-                            set: { viewModel.newEmergencyContact.relation = $0 }
-                        ))
-                    }
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                        Group {
+                            HStack {
+                                Image(systemName: "person.fill")
+                                    .foregroundColor(CCDesign.accent)
+                                TextField("Name", text: $viewModel.newEmergencyContact.name)
+                                    .foregroundColor(CCDesign.textPrimary)
+                            }
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
 
-                    // Alter
-                    HStack {
-                        Image(systemName: "calendar")
-                            .foregroundColor(.accentColor)
-                        TextField("Alter", value: $viewModel.newEmergencyContact.age, format: .number)
-                            .keyboardType(.numberPad)
-                    }
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                
-                Section(header: Text("Kontaktinformationen")) {
-                    // Telefonnummer
-                    HStack {
-                        Image(systemName: "phone.fill")
-                            .foregroundColor(.accentColor)
-                        TextField("Telefonnummer", text: Binding(
-                            get: { viewModel.newEmergencyContact.phone ?? "" },
-                            set: { viewModel.newEmergencyContact.phone = $0 }
-                        ))
-                        .keyboardType(.phonePad)
-                    }
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                            HStack {
+                                Image(systemName: "heart.text.square")
+                                    .foregroundColor(CCDesign.accent)
+                                TextField("Beziehung (z. B. Ehepartner)", text: Binding(
+                                    get: { viewModel.newEmergencyContact.relation ?? "" },
+                                    set: { viewModel.newEmergencyContact.relation = $0 }
+                                ))
+                                .foregroundColor(CCDesign.textPrimary)
+                            }
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
 
-                    // E-Mail-Adresse
-                    HStack {
-                        Image(systemName: "envelope.fill")
-                            .foregroundColor(.accentColor)
-                        TextField("E-Mail-Adresse", text: Binding(
-                            get: { viewModel.newEmergencyContact.email ?? "" },
-                            set: { viewModel.newEmergencyContact.email = $0 }
-                        ))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled(true)
-                        .keyboardType(.emailAddress)
-                    }
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-
-                    // Adresse mit Apple Maps API
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "mappin.and.ellipse")
-                                .foregroundColor(.accentColor)
-                            TextField("Adresse", text: $addressVM.queryFragment)
-                                .textInputAutocapitalization(.words)
-                                .disableAutocorrection(true)
+                            HStack {
+                                Image(systemName: "calendar")
+                                    .foregroundColor(CCDesign.accent)
+                                TextField("Alter", value: $viewModel.newEmergencyContact.age, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .foregroundColor(CCDesign.textPrimary)
+                            }
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
                         }
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
 
-                        if !addressVM.suggestions.isEmpty {
-                            ScrollView {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    ForEach(addressVM.suggestions, id: \.self) { suggestion in
-                                        Button {
-                                            viewModel.newEmergencyContact.address = suggestion
-                                            addressVM.queryFragment = suggestion
-                                            addressVM.suggestions = []
-                                        } label: {
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "location.fill")
-                                                    .foregroundColor(.blue)
-                                                Text(suggestion)
-                                                    .foregroundColor(.primary)
-                                                    .lineLimit(2)
-                                                Spacer()
+                    // Kontaktinformationen
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Kontaktinformationen", systemImage: "phone.text.fill")
+                            .font(.headline)
+                            .foregroundColor(CCDesign.textPrimary)
+
+                        Group {
+                            HStack {
+                                Image(systemName: "phone.fill")
+                                    .foregroundColor(CCDesign.accent)
+                                TextField("Telefonnummer", text: Binding(
+                                    get: { viewModel.newEmergencyContact.phone ?? "" },
+                                    set: { viewModel.newEmergencyContact.phone = $0 }
+                                ))
+                                .keyboardType(.phonePad)
+                                .foregroundColor(CCDesign.textPrimary)
+                            }
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+
+                            HStack {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundColor(CCDesign.accent)
+                                TextField("E-Mail-Adresse", text: Binding(
+                                    get: { viewModel.newEmergencyContact.email ?? "" },
+                                    set: { viewModel.newEmergencyContact.email = $0 }
+                                ))
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                                .keyboardType(.emailAddress)
+                                .foregroundColor(CCDesign.textPrimary)
+                            }
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .foregroundColor(CCDesign.accent)
+                                    TextField("Adresse", text: $addressVM.queryFragment)
+                                        .textInputAutocapitalization(.words)
+                                        .disableAutocorrection(true)
+                                        .foregroundColor(CCDesign.textPrimary)
+                                }
+                                .padding()
+                                .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+
+                                if !addressVM.suggestions.isEmpty {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        ForEach(addressVM.suggestions, id: \.self) { suggestion in
+                                            Button {
+                                                viewModel.newEmergencyContact.address = suggestion
+                                                addressVM.queryFragment = suggestion
+                                                addressVM.suggestions = []
+                                            } label: {
+                                                HStack {
+                                                    Image(systemName: "location.fill")
+                                                        .foregroundColor(CCDesign.accent)
+                                                    Text(suggestion)
+                                                        .foregroundColor(CCDesign.textPrimary)
+                                                        .lineLimit(2)
+                                                    Spacer()
+                                                }
+                                                .padding(8)
+                                                .background(RoundedRectangle(cornerRadius: 8).fill(CCDesign.background.opacity(0.5)))
                                             }
-                                            .padding(10)
-                                            .background(Color(.systemGray5).opacity(0.3))
-                                            .cornerRadius(8)
                                         }
                                     }
+                                    .padding(.top, 4)
                                 }
-                                .padding(.top, 4)
                             }
-                            .frame(maxHeight: 180)
-                            .scrollIndicators(.hidden)
-                            .transition(.opacity)
                         }
                     }
-                    .animation(.easeInOut, value: addressVM.suggestions)
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
                 }
+                .padding(.vertical)
             }
+            .background(CCDesign.background.ignoresSafeArea())
             .navigationTitle("Notfallkontakt hinzufügen")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -142,10 +153,11 @@ struct EmergencyContactEditorView: View {
                             dismiss()
                         }
                     }
+                    .tint(CCDesign.accent)
                 }
-                
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") { dismiss() }
+                        .tint(CCDesign.accent)
                 }
             }
         }

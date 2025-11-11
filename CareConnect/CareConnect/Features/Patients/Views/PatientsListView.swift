@@ -17,18 +17,29 @@ struct PatientsListView: View {
         NavigationStack {
             ZStack {
                 CCDesign.background.ignoresSafeArea()
-
-                let isLoading = vm.isLoading
-                if isLoading {
-                    ProgressView("Lade Patienten…")
-                        .tint(.accentColor)
-                } else if vm.patients.isEmpty {
+                
+                if vm.isLoading {
                     VStack(spacing: 12) {
-                        Image(systemName: "person.3.sequence.fill")
-                            .font(.system(size: 48))
-                            .foregroundColor(.gray)
-                        Text("Keine Patienten gefunden")
+                        ProgressView("Lade Patienten…")
+                            .tint(CCDesign.accent)
+                            .scaleEffect(1.2)
+                        Text("Bitte warten...")
                             .foregroundColor(.secondary)
+                            .font(.subheadline)
+                    }
+                } else if vm.patients.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.crop.circle.badge.questionmark")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray.opacity(0.6))
+                        Text("Keine Patienten gefunden")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Neue Patienten erscheinen automatisch, sobald sie hinzugefügt werden.")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
                 } else {
                     ScrollView {
@@ -37,18 +48,43 @@ struct PatientsListView: View {
                                 NavigationLink {
                                     PatientProfileView(patientId: patient.id ?? "")
                                 } label: {
-                                    PatientCardView(patient: patient)
-                                        .background(CCDesign.card)
-                                        .cornerRadius(16)
-                                        .shadow(color: Color(.separator).opacity(0.4), radius: 2, x: 0, y: 1)
+                                    HStack(spacing: 16) {
+                                        Image(systemName: "person.fill")
+                                            .font(.title2)
+                                            .frame(width: 50, height: 50)
+                                            .background(
+                                                Circle()
+                                                    .fill(CCDesign.accent.opacity(0.1))
+                                            )
+                                            .foregroundColor(CCDesign.accent)
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("\(patient.firstName ?? "") \(patient.lastName ?? "")")
+                                                .font(.headline)
+                                                .foregroundColor(CCDesign.textPrimary)
+                                            Text(patient.address ?? "Keine Adresse vorhanden")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(CCDesign.card)
+                                            .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
+                                    )
                                 }
+                                .buttonStyle(.plain)
                             }
                         }
-                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, 16)
                     }
                 }
             }
             .navigationTitle("Patienten")
+            .navigationBarTitleDisplayMode(.inline)
             .task { await vm.load() }
         }
     }

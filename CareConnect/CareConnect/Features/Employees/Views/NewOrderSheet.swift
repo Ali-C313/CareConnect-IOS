@@ -111,12 +111,13 @@ struct NewOrderSheet: View {
         let newOrder: [String: Any] = [
             "id": orderId,
             "patientName": displayName.isEmpty ? (selectedPatient.email ?? "") : displayName,
+            "patientId": (selectedPatient.uid ?? ""),
             "description": descriptionText,
             "createdAt": FieldValue.serverTimestamp(),
             "dueDate": Timestamp(date: dueDate),
             "state": "offen",
             "createdBy": creatorUID,
-            "assignedTo": patientName,
+            "assignedTo": "",
             "notes": []
         ]
 

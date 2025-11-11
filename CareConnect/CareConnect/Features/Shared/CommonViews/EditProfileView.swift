@@ -38,82 +38,103 @@ struct EditProfileView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Profilbild") {
-                    HStack {
-                        Spacer()
-                        VStack {
-                            if let image = profileImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 120, height: 120)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 5)
-                            } else {
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 120, height: 120)
-                                    .foregroundColor(.gray)
-                                    .opacity(0.7)
-                            }
-
-                            PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
-                                Label("Bild auswählen", systemImage: "photo.on.rectangle")
-                            }
-                            .onChange(of: selectedPhoto) {
-                                guard let selectedPhoto else { return }
-                                Task {
-                                    if let data = try? await selectedPhoto.loadTransferable(type: Data.self),
-                                       let uiImage = UIImage(data: data) {
-                                        profileImage = uiImage
-                                    }
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Profilbild Abschnitt
+                    VStack(spacing: 12) {
+                        if let image = profileImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .shadow(radius: 6)
+                        } else {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 120, height: 120)
+                                .foregroundColor(.gray.opacity(0.5))
+                        }
+                        PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                            Label("Bild auswählen", systemImage: "photo.on.rectangle")
+                                .font(.subheadline)
+                                .foregroundColor(CCDesign.accent)
+                        }
+                        .onChange(of: selectedPhoto) {
+                            guard let selectedPhoto else { return }
+                            Task {
+                                if let data = try? await selectedPhoto.loadTransferable(type: Data.self),
+                                   let uiImage = UIImage(data: data) {
+                                    profileImage = uiImage
                                 }
                             }
                         }
-                        Spacer()
                     }
-                }
-                Section("Allgemein") {
-                    TextField("Vorname", text: $employee.firstName)
-                    TextField("Nachname", text: $employee.lastName)
-                    TextField("Rolle", text: $employee.role)
-                    TextField("E-Mail", text: $employee.email)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled(true)
-                }
-                Section("Passwort ändern") {
-                    SecureField("Aktuelles Passwort", text: $currentPassword)
-                    SecureField("Neues Passwort", text: $newPassword)
-                    SecureField("Neues Passwort bestätigen", text: $confirmPassword)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
 
-                    HStack {
-                        Spacer()
+                    // Allgemein Abschnitt
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Allgemein", systemImage: "person.text.rectangle")
+                            .font(.headline)
+                        Group {
+                            TextField("Vorname", text: $employee.firstName)
+                            TextField("Nachname", text: $employee.lastName)
+                            TextField("Rolle", text: $employee.role)
+                            TextField("E-Mail", text: $employee.email)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                        }
+                        .padding(10)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(CCDesign.card.opacity(0.7)))
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
+
+                    // Passwort Abschnitt
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Passwort ändern", systemImage: "lock")
+                            .font(.headline)
+                        SecureField("Aktuelles Passwort", text: $currentPassword)
+                            .textContentType(.password)
+                        SecureField("Neues Passwort", text: $newPassword)
+                            .textContentType(.newPassword)
+                        SecureField("Neues Passwort bestätigen", text: $confirmPassword)
+                            .textContentType(.newPassword)
+
                         Button {
                             Task { await changePassword() }
                         } label: {
                             if isChangingPassword {
                                 ProgressView()
                             } else {
-                                Text("Passwort ändern")
-                                    .bold()
+                                Label("Passwort ändern", systemImage: "key.fill")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.accent))
+                                    .foregroundColor(.white)
                             }
                         }
                         .disabled(isChangingPassword)
-                        Spacer()
                     }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
                 }
+                .padding(.vertical)
             }
+            .background(CCDesign.background)
             .navigationTitle("Profil bearbeiten")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Abbrechen") { dismiss() }
-                }
+                ToolbarItem(placement: .cancellationAction) { Button("Abbrechen") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Speichern") {
-                        Task { await save() }
-                    }
+                    Button("Speichern") { Task { await save() } }
+                        .tint(CCDesign.accent)
                 }
             }
             .alert("Fehler", isPresented: Binding(get: { false }, set: { _ in })) { }

@@ -32,7 +32,7 @@ final class OrderDetailViewModel: ObservableObject {
                 "employeeId": employeeId,
                 "acceptedAt": Date()
             ])
-            EmployeeLocationManager.shared.startTracking(for: employeeId)
+            EmployeeLocationManager.shared.startTracking(for: employeeId, orderId: id)
         } catch { self.error = "Fehler beim Annehmen: \(error.localizedDescription)" }
     }
 

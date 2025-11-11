@@ -14,35 +14,35 @@ struct EmployeeWorkScheduleView: View {
     /// UI-Inhalt
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            let schedule = vm.workSchedule
             Text("Arbeitszeiten")
                 .font(.headline)
                 .foregroundColor(CCDesign.textPrimary)
 
             HStack {
-                Label("\(vm.workSchedule.weeklyHours) Std/Woche",
-                      systemImage: "clock")
+                Label("\(schedule.weeklyHours) Std/Woche", systemImage: "clock")
                 Spacer()
-                Label("\(vm.workSchedule.shiftStart) – \(vm.workSchedule.shiftEnd)",
-                      systemImage: "clock.badge.checkmark")
+                Label("\(schedule.shiftStart) – \(schedule.shiftEnd)", systemImage: "clock.badge.checkmark")
             }
             .foregroundColor(.secondary)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(vm.workSchedule.workDays, id: \.self) { day in
-                        Text(day)
+                    ForEach(schedule.workDays, id: \.self) { day in
+                        Label(day, systemImage: "sun.max.fill")
+                            .labelStyle(.titleOnly)
+                            .font(.subheadline)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(CCDesign.card)
+                            .background(CCDesign.card.opacity(0.9))
                             .clipShape(Capsule())
                     }
                 }
             }
         }
         .padding()
-        .background(CCDesign.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: Color(.separator).opacity(0.25),
-                radius: 3, x: 0, y: 2)
+        .background(CCDesign.card.opacity(0.95))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: CCDesign.textSecondary.opacity(0.2), radius: 3, x: 0, y: 2)
     }
 }

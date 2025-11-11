@@ -340,16 +340,59 @@ struct PatientProfileView: View {
                             InfoRow(system: "envelope", title: "E‑Mail", value: "Keine E‑Mail‑Adresse angegeben")
                         }
 
-                        // Adresse (tappbar)
+                        // 🔹 Adresse (modernes Design)
                         if let address = contact.address, !address.isEmpty {
-                            InfoButtonRow(system: "map.fill", title: "Adresse", value: address, buttonTitle: "In Karten öffnen") {
-                                let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                                if let url = URL(string: "http://maps.apple.com/?q=" + encoded) {
-                                    UIApplication.shared.open(url)
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .foregroundColor(CCDesign.accent)
+                                    .font(.title3)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Adresse")
+                                        .font(.subheadline)
+                                        .foregroundColor(CCDesign.textSecondary)
+                                    Text(address)
+                                        .font(.body)
+                                        .foregroundColor(CCDesign.textPrimary)
+                                        .multilineTextAlignment(.leading)
+                                    Button {
+                                        let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                                        if let url = URL(string: "http://maps.apple.com/?q=" + encoded) {
+                                            UIApplication.shared.open(url)
+                                        }
+                                    } label: {
+                                        Label("In Karten öffnen", systemImage: "map.fill")
+                                            .font(.footnote)
+                                            .foregroundColor(CCDesign.accent)
+                                    }
                                 }
+                                Spacer()
                             }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(CCDesign.card)
+                                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                            )
                         } else {
-                            InfoRow(system: "map", title: "Adresse", value: "Keine Adresse angegeben")
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "mappin")
+                                    .foregroundColor(.secondary)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Adresse")
+                                        .font(.subheadline)
+                                        .foregroundColor(CCDesign.textSecondary)
+                                    Text("Keine Adresse angegeben")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(CCDesign.card)
+                                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                            )
                         }
                     }
                     .padding()

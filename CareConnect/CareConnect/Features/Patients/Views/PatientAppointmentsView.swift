@@ -9,33 +9,59 @@ import SwiftUI
 import Foundation
 
 struct PatientAppointmentsView: View {
-    /// Terminliste
-    @State private var appointments = [
-        "Hausbesuch Dr. Müller – 25.10. um 10:00 Uhr",
-        "Pflegekontrolle – 27.10. um 15:00 Uhr"
-    ]
+    
     @State private var showAddSheet = false
     @StateObject private var appointmentsVM = AppointmentsViewModel()
 
-    /// UI-Inhalt
     var body: some View {
         NavigationStack {
-            List(appointments, id: \.self) { appointment in
-                Label(appointment, systemImage: "calendar")
+            List {
+                ForEach(appointmentsVM.appointments) { appointment in
+                    HStack {
+                        Label("\(appointment.what) – \(formattedDate(appointment.date))", systemImage: "calendar")
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            appointmentsVM.deleteAppointment(appointment)
+                        } label: {
+                            Label("Löschen", systemImage: "trash")
+                        }
+
+                        Button {
+                            appointmentsVM.editingAppointment = appointment
+                            showAddSheet = true
+                        } label: {
+                            Label("Bearbeiten", systemImage: "pencil")
+                        }
+                        .tint(.blue)
+                    }
+                }
             }
             .navigationTitle("Termine")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { showAddSheet = true }
-                    label: {
+                    Button {
+                        appointmentsVM.editingAppointment = nil
+                        showAddSheet = true
+                    } label: {
                         Image(systemName: "plus.circle.fill")
-                    }
-                    .sheet(isPresented: $showAddSheet) {
-                        AddEditAppointmentSheet(viewModel: appointmentsVM)
                     }
                 }
             }
+            .onAppear {
+                appointmentsVM.fetchAppointments()
+            }
+            .sheet(isPresented: $showAddSheet) {
+                AddEditAppointmentSheet(viewModel: appointmentsVM)
+            }
         }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 

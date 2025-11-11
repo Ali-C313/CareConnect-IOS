@@ -15,32 +15,52 @@ struct EmployeeCard: View {
     
     /// UI-Inhalt
     var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(employee.staffStatusEnum.color.opacity(0.2))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Image(systemName: "person.fill")
-                        .foregroundColor(employee.staffStatusEnum.color)
-                )
-            
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(CCDesign.card.opacity(0.8))
+                    .overlay(
+                        Circle()
+                            .stroke(employee.staffStatusEnum.color, lineWidth: 2)
+                    )
+                    .frame(width: 58, height: 58)
+                    .shadow(color: employee.staffStatusEnum.color.opacity(0.25), radius: 4, x: 0, y: 2)
+
+                Image(systemName: "person.fill")
+                    .font(.title2)
+                    .foregroundColor(employee.staffStatusEnum.color)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
                 Text("\(employee.firstName) \(employee.lastName)")
-                    .bold()
+                    .font(.headline)
                     .foregroundColor(CCDesign.textPrimary)
-                    .lineLimit(1)
+
                 Text(employee.role)
                     .font(.subheadline)
                     .foregroundColor(CCDesign.textSecondary)
-                Text(employee.staffStatusEnum.rawValue)
-                    .font(.caption2)
-                    .foregroundColor(employee.staffStatusEnum.color)
+
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(employee.staffStatusEnum.color)
+                        .frame(width: 8, height: 8)
+                    Text(employee.staffStatusEnum.rawValue)
+                        .font(.caption)
+                        .foregroundColor(employee.staffStatusEnum.color)
+                }
             }
             Spacer()
         }
-        .padding()
-        .background(CCDesign.card)
-        .cornerRadius(16)
-        .shadow(color: Color(.separator).opacity(0.3), radius: 2, x: 0, y: 1)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(CCDesign.card)
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.gray.opacity(0.05), lineWidth: 1)
+        )
+        .padding(.horizontal)
     }
 }

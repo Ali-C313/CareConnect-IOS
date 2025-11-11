@@ -42,7 +42,7 @@ final class CurrentOrderViewModel: ObservableObject {
                 return uidMatch || nameMatch || emailMatch
             })
 
-            self.employee = employees.first(where: { $0.id == order.assignedTo })
+            self.employee = employees.first(where: { $0.id == order.employeeId })
         } catch { self.error = "Daten konnten nicht geladen werden: \(error.localizedDescription)" }
     }
 }

@@ -65,17 +65,31 @@ struct OrderCard: View {
                     .cornerRadius(8)
             }
             
-            // MARK: - Auftragsnotizen
-            if let notes = order.notes, !notes.isEmpty {
-                Text(notes.joined(separator: ", "))
+            // MARK: - Auftragsbeschreibung
+            if !order.description.isEmpty {
+                let description = order.description
+                Text(description)
                     .font(.subheadline)
                     .foregroundColor(CCDesign.textSecondary)
                     .lineLimit(2)
             } else {
-                Text("Keine Notizen vorhanden.")
+                Text("Keine Beschreibung vorhanden.")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .italic()
+            }
+            
+            // MARK: - Ersteller
+            if !order.createdBy.isEmpty {
+                let createdBy = order.createdBy
+                HStack {
+                    Image(systemName: "person.circle.fill")
+                        .foregroundColor(CCDesign.accent)
+                    Text(createdBy)
+                        .font(.caption)
+                        .foregroundColor(CCDesign.textSecondary)
+                    Spacer()
+                }
             }
             
             // MARK: - Mitarbeiter

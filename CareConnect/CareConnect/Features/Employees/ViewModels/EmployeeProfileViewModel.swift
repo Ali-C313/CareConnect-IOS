@@ -59,8 +59,18 @@ final class EmployeeProfileViewModel: ObservableObject {
     /// Mitarbeiter laden
     private func loadEmployee(employeeId: String) async {
         do {
+            let cachedSnap = try? await db.collection("employees").document(employeeId).getDocument(source: .cache)
+            if let cachedData = cachedSnap, let emp = try? cachedData.data(as: Employee.self) {
+                self.employee = emp
+            }
+        }
+        do {
             let snap = try await db.collection("employees").document(employeeId).getDocument()
-            self.employee = try snap.data(as: Employee.self)
+            if let emp = try? snap.data(as: Employee.self) {
+                self.employee = emp
+            } else {
+                self.errorMessage = "Fehler beim Laden des Mitarbeiterprofils."
+            }
         } catch {
             self.errorMessage = "Mitarbeiter konnte nicht geladen werden: \(error.localizedDescription)"
         }
@@ -99,11 +109,15 @@ final class EmployeeProfileViewModel: ObservableObject {
     // MARK: - Dokument hochladen (PDF)
     /// PDF importieren
     func importPDF(from pickedURL: URL, employeeId: String) async {
-        // Security scoped (für iCloud/Dateien)
-        let needsAccess = pickedURL.startAccessingSecurityScopedResource()
-        defer { if needsAccess { pickedURL.stopAccessingSecurityScopedResource() } }
-
         do {
+            guard !documents.contains(where: { $0.fileName == pickedURL.lastPathComponent }) else {
+                self.errorMessage = "Diese Datei wurde bereits hochgeladen."
+                return
+            }
+            // Security scoped (für iCloud/Dateien)
+            let needsAccess = pickedURL.startAccessingSecurityScopedResource()
+            defer { if needsAccess { pickedURL.stopAccessingSecurityScopedResource() } }
+
             let data = try Data(contentsOf: pickedURL)
             let filename = suggestedFileName(from: pickedURL) ?? "Dokument-\(UUID().uuidString).pdf"
             let storageRef = storage.reference(withPath: "employeeDocuments/\(employeeId)/\(UUID().uuidString)-\(filename)")

@@ -45,94 +45,155 @@ struct RegisterView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    Text("Registrieren").font(.largeTitle.bold()).padding(.top)
+                VStack(spacing: 28) {
 
-                    ImagePicker(selectedImage: $selectedImage).padding(.bottom, 8)
+                    // Header
+                    VStack(spacing: 8) {
+                        Text("Registrieren")
+                            .font(.largeTitle.bold())
+                            .foregroundColor(CCDesign.accent)
+                        Text("Erstelle dein CareConnect Konto")
+                            .font(.subheadline)
+                            .foregroundColor(CCDesign.textSecondary)
+                    }
+                    .padding(.top, 32)
+                    .padding(.bottom, 8)
 
-                    Group {
-                        TextField("Vorname", text: $firstName).textFieldStyle(.roundedBorder)
-                        TextField("Nachname", text: $lastName).textFieldStyle(.roundedBorder)
+                    // Profile Image Picker
+                    VStack(spacing: 10) {
+                        ImagePicker(selectedImage: $selectedImage)
+                            .frame(height: 160)
+                            .clipShape(Circle())
+                            .shadow(radius: 6)
+                        Text("Profilbild auswählen")
+                            .font(.footnote.bold())
+                            .foregroundColor(CCDesign.accent)
+                    }
+                    .padding(.horizontal)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+
+                    // Personal Info
+                    VStack(spacing: 16) {
+                        customTextField("Vorname", text: $firstName, icon: "person.fill")
+                        customTextField("Nachname", text: $lastName, icon: "person.fill")
 
                         Picker("Rolle", selection: $selectedRole) {
                             ForEach(roles, id: \.self) { Text($0) }
                         }
                         .pickerStyle(.segmented)
+                        .padding(.vertical, 8)
 
                         DatePicker("Geburtsdatum", selection: $birthDate, displayedComponents: .date)
                             .datePickerStyle(.compact)
-                        
-                        if selectedRole == "Patient" {
-                            VStack(alignment: .leading) {
-                                TextField("Adresse", text: $addressVM.queryFragment)
-                                    .textInputAutocapitalization(.words)
-                                    .disableAutocorrection(true)
-                                    .textFieldStyle(.roundedBorder)
+                            .padding(10)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+                    }
+                    .padding(.horizontal)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                    .padding(.horizontal)
 
-                                if !addressVM.suggestions.isEmpty {
-                                    List(addressVM.suggestions, id: \.self) { suggestion in
-                                        Button {
-                                            address = suggestion
-                                            addressVM.queryFragment = suggestion
-                                            addressVM.suggestions = []
-                                        } label: {
-                                            Text(suggestion)
-                                                .foregroundStyle(.primary)
-                                                .lineLimit(2)
-                                        }
+                    // Patient Specific Fields
+                    if selectedRole == "Patient" {
+                        VStack(spacing: 16) {
+                            customTextField("Adresse", text: $addressVM.queryFragment, icon: "mappin.and.ellipse")
+                            if !addressVM.suggestions.isEmpty {
+                                ForEach(addressVM.suggestions, id: \.self) { suggestion in
+                                    Button {
+                                        address = suggestion
+                                        addressVM.queryFragment = suggestion
+                                        addressVM.suggestions = []
+                                    } label: {
+                                        Text(suggestion)
+                                            .foregroundColor(.primary)
+                                            .padding(8)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
                                     }
-                                    .frame(maxHeight: 150)
+                                    .background(RoundedRectangle(cornerRadius: 8).fill(CCDesign.card.opacity(0.6)))
                                 }
                             }
-                            TextField("Stadt", text: $city)
-                                .textFieldStyle(.roundedBorder)
-                            TextField("Telefonnummer", text: $phone)
-                                .textFieldStyle(.roundedBorder)
+                            customTextField("Stadt", text: $city, icon: "building.2.fill")
+                            customTextField("Telefonnummer", text: $phone, icon: "phone.fill")
                         }
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                        .padding(.horizontal)
                     }
+
+                    // Credentials
+                    VStack(spacing: 16) {
+                        customTextField("E-Mail-Adresse", text: $viewModel.email, icon: "envelope.fill")
+                        secureField("Passwort", text: $viewModel.password, icon: "lock.fill")
+                        secureField("Passwort bestätigen", text: $viewModel.confirmPassword, icon: "lock.rotation.open")
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
                     .padding(.horizontal)
 
-                    Divider().padding(.vertical)
-
-                    Group {
-                        TextField("E-Mail-Adresse", text: $viewModel.email)
-                            .textFieldStyle(.roundedBorder)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled(true)
-
-                        SecureField("Passwort", text: $viewModel.password).textFieldStyle(.roundedBorder)
-                        SecureField("Passwort bestätigen", text: $viewModel.confirmPassword).textFieldStyle(.roundedBorder)
-                    }
-                    .padding(.horizontal)
-
+                    // Error message
                     if let error = viewModel.errorMessage {
-                        Text(error).foregroundColor(.red).multilineTextAlignment(.center).padding(.horizontal)
+                        Text(error)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
 
+                    // Register Button
                     Button {
                         Task { await registerUser() }
                     } label: {
                         if viewModel.isLoading {
                             ProgressView().tint(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
                         } else {
                             Text("Konto erstellen")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                                .padding(.horizontal)
                         }
                     }
+                    .background(CCDesign.accent)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.horizontal)
                     .disabled(viewModel.isLoading)
 
                     Spacer(minLength: 40)
                 }
-                .padding(.bottom, 60)
+                .padding(.vertical)
             }
+            .background(CCDesign.background.ignoresSafeArea())
             .navigationTitle("Registrieren")
+            .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    @ViewBuilder
+    private func customTextField(_ placeholder: String, text: Binding<String>, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(CCDesign.accent)
+            TextField(placeholder, text: text)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled(true)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1)))
+    }
+
+    @ViewBuilder
+    private func secureField(_ placeholder: String, text: Binding<String>, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(CCDesign.accent)
+            SecureField(placeholder, text: text)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1)))
     }
 
     /// Registrierung

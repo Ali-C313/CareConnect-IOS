@@ -26,6 +26,7 @@ struct EmployeeProfileHeaderView: View {
                                 .scaledToFill()
                                 .frame(width: 72, height: 72)
                                 .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1))
                         case .failure:
                             PlaceholderAvatarView()
                         @unknown default:
@@ -58,9 +59,11 @@ struct EmployeeProfileHeaderView: View {
                 Spacer()
             }
             .padding()
-            .background(CCDesign.card)
+            .background(CCDesign.card.opacity(0.95))
             .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: Color(.separator).opacity(0.25), radius: 3, x: 0, y: 2)
+            .shadow(color: CCDesign.textSecondary.opacity(0.2), radius: 3, x: 0, y: 2)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(vm.employee?.name ?? "Unbekannter Mitarbeiter"), \(vm.employee?.role ?? "")")
     }
 }

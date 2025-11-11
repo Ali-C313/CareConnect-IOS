@@ -33,23 +33,34 @@ struct LoginView: View {
                 CCDesign.background.ignoresSafeArea()
                 
                 VStack(spacing: 24) {
-                    Text("Anmelden")
+                    Text("Willkommen zurück")
                         .font(.largeTitle.bold())
                         .foregroundColor(CCDesign.textPrimary)
-                        .padding(.top, 40)
+                        .padding(.top, 50)
+                        .padding(.bottom, 10)
                     
-                    VStack(spacing: 16) {
-                        TextField("E-Mail-Adresse", text: $viewModel.email)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled(true)
-                            .padding()
-                            .background(CCDesign.card)
-                            .cornerRadius(10)
-                        
-                        SecureField("Passwort", text: $viewModel.password)
-                            .padding()
-                            .background(CCDesign.card)
-                            .cornerRadius(10)
+                    VStack(spacing: 18) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("E-Mail", systemImage: "envelope.fill")
+                                .foregroundColor(CCDesign.textSecondary)
+                                .font(.caption)
+
+                            TextField("E-Mail-Adresse", text: $viewModel.email)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                                .padding(14)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Passwort", systemImage: "lock.fill")
+                                .foregroundColor(CCDesign.textSecondary)
+                                .font(.caption)
+
+                            SecureField("Passwort", text: $viewModel.password)
+                                .padding(14)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(CCDesign.card))
+                        }
                     }
                     .padding(.horizontal)
                     
@@ -63,17 +74,21 @@ struct LoginView: View {
                     Button {
                         Task { await viewModel.login() }
                     } label: {
-                        if viewModel.isLoading {
-                            ProgressView().tint(.white)
-                        } else {
-                            Text("Einloggen")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(isFormValid ? Color.accentColor : Color.gray)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
+                        HStack {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("Einloggen")
+                                    .font(.headline)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isFormValid ? CCDesign.accent : CCDesign.accent.opacity(0.4))
+                        .foregroundColor(.white)
+                        .cornerRadius(14)
+                        .shadow(color: CCDesign.accent.opacity(0.3), radius: 5, x: 0, y: 3)
                     }
                     .padding(.horizontal)
                     .disabled(!isFormValid || viewModel.isLoading)
@@ -87,7 +102,8 @@ struct LoginView: View {
                     } label: {
                         Text("Noch kein Konto? Jetzt registrieren")
                             .font(.footnote)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(CCDesign.accent)
+                            .padding(.top, 4)
                     }
                     .padding(.bottom, 40)
                     

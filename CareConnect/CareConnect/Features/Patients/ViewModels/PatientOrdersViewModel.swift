@@ -11,28 +11,6 @@ import Combine
 import CoreLocation
 import SwiftUI
 
-struct PatientOrderDisplayModel: Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let state: String
-    let date: Date
-    // Zusatzfelder für die Anzeige
-    let employeeName: String
-    let employeePhone: String
-    let employeeLocation: CLLocationCoordinate2D?
-    let etaFormatted: String
-    let statusText: String
-    let statusColor: Color
-
-    var dateFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
-    }
-}
-
 class PatientOrdersViewModel: ObservableObject {
     @Published var activeOrder: PatientOrderDisplayModel?
     @Published var openOrders: [PatientOrderDisplayModel] = []
@@ -45,6 +23,82 @@ class PatientOrdersViewModel: ObservableObject {
     private var db = Firestore.firestore()
     private var ordersListener: ListenerRegistration?
     private var employeeLocationListener: ListenerRegistration?
+
+    func fetchActiveOrder(for patientId: String) {
+        db.collection("orders")
+            .whereField("assignedTo", isEqualTo: patientId)
+            .whereField("state", isEqualTo: "aktuell")
+            .addSnapshotListener { [weak self] snapshot, error in
+                guard let self = self else { return }
+
+                if let error = error {
+                    self.errorMessage = "Fehler beim Abrufen des aktiven Auftrags: \(error.localizedDescription)"
+                    return
+                }
+
+                guard let document = snapshot?.documents.first else {
+                    DispatchQueue.main.async { self.activeOrder = nil }
+                    return
+                }
+
+                let data = document.data()
+                let id = document.documentID
+                let title = data["title"] as? String ?? "Unbekannter Auftrag"
+                let description = data["description"] as? String ?? ""
+                let state = data["state"] as? String ?? ""
+                let timestamp = data["date"] as? Timestamp
+                let date = timestamp?.dateValue() ?? Date()
+                let employeeName = data["employeeName"] as? String ?? "Unbekannt"
+                let employeePhone = data["employeePhone"] as? String ?? ""
+                let employeeId = data["employeeId"] as? String
+                let patientLatitude = data["patientLatitude"] as? Double
+                let patientLongitude = data["patientLongitude"] as? Double
+                var employeeLocation: CLLocationCoordinate2D? = nil
+                if let lat = data["employeeLatitude"] as? CLLocationDegrees,
+                   let lon = data["employeeLongitude"] as? CLLocationDegrees {
+                    employeeLocation = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+                }
+                let etaFormatted = data["etaFormatted"] as? String ?? ""
+
+                let statusText: String
+                let statusColor: Color
+                switch state.lowercased() {
+                case "aktuell":
+                    statusText = "Aktuell"
+                    statusColor = .blue
+                case "offen":
+                    statusText = "Offen"
+                    statusColor = .orange
+                case "erledigt":
+                    statusText = "Erledigt"
+                    statusColor = .green
+                default:
+                    statusText = state
+                    statusColor = .gray
+                }
+
+                let order = PatientOrderDisplayModel(
+                    id: id,
+                    title: title,
+                    description: description,
+                    state: state,
+                    employeeId: employeeId,
+                    patientLatitude: patientLatitude,
+                    patientLongitude: patientLongitude,
+                    date: date,
+                    employeeName: employeeName,
+                    employeePhone: employeePhone,
+                    employeeLocation: employeeLocation,
+                    etaFormatted: etaFormatted,
+                    statusText: statusText,
+                    statusColor: statusColor
+                )
+
+                DispatchQueue.main.async {
+                    self.activeOrder = order
+                }
+            }
+    }
 
     func loadOrders(for userId: String) {
         isLoading = true
@@ -86,6 +140,9 @@ class PatientOrdersViewModel: ObservableObject {
                     // Neue Felder aus Firestore oder Fallbacks
                     let employeeName = data["employeeName"] as? String ?? "Unbekannt"
                     let employeePhone = data["employeePhone"] as? String ?? ""
+                    let employeeId = data["employeeId"] as? String
+                    let patientLatitude = data["patientLatitude"] as? Double
+                    let patientLongitude = data["patientLongitude"] as? Double
                     var employeeLocation: CLLocationCoordinate2D? = nil
                     if let lat = data["employeeLatitude"] as? CLLocationDegrees,
                        let lon = data["employeeLongitude"] as? CLLocationDegrees {
@@ -116,6 +173,9 @@ class PatientOrdersViewModel: ObservableObject {
                         title: title,
                         description: description,
                         state: state,
+                        employeeId: employeeId,
+                        patientLatitude: patientLatitude,
+                        patientLongitude: patientLongitude,
                         date: date,
                         employeeName: employeeName,
                         employeePhone: employeePhone,

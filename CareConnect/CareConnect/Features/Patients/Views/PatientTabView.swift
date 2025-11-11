@@ -12,23 +12,34 @@ struct PatientTabView: View {
     /// Tab-Ansicht
     var body: some View {
         TabView {
-            PatientHomeView()
-                .tabItem { Label("Home", systemImage: "house.fill")
+            NavigationStack { PatientHomeView() }
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
                 }
-            PatientOrdersView()
-                .tabItem { Label("Auftrag Status", systemImage: "staroflife.fill")
+
+            NavigationStack { PatientOrdersView() }
+                .tabItem {
+                    Label("Aufträge", systemImage: "staroflife.fill")
                 }
-            PatientMedicineView()
-                .tabItem { Label("Medizin", systemImage: "cross.case.fill")
+
+            NavigationStack { PatientMedicineView() }
+                .tabItem {
+                    Label("Medizin", systemImage: "cross.case.fill")
                 }
-            PatientAppointmentsView()
-                .tabItem { Label("Termin", systemImage: "calendar.badge.plus")
+
+            NavigationStack { PatientAppointmentsView() }
+                .tabItem {
+                    Label("Termine", systemImage: "calendar.badge.plus")
                 }
-            PatientSettingsView()
-                .tabItem { Label("Einstellungen", systemImage: "gear")
+
+            NavigationStack { PatientSettingsView() }
+                .tabItem {
+                    Label("Einstellungen", systemImage: "gearshape.fill")
                 }
         }
-        .tint(.green)
+        .accentColor(CCDesign.accent)
+        .background(CCDesign.background.ignoresSafeArea())
+        .tint(CCDesign.accent)
     }
 }
 

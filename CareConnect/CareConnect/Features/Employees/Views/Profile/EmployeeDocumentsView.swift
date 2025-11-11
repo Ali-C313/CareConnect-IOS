@@ -44,7 +44,7 @@ struct EmployeeDocumentsView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 RoundedRectangle(cornerRadius: 8)
-                                    .fill(.white.opacity(0.12))
+                                    .fill(CCDesign.card.opacity(0.15))
                                     .frame(width: 54, height: 54)
                                     .overlay(
                                         Image(systemName: "doc.richtext.fill")
@@ -70,7 +70,13 @@ struct EmployeeDocumentsView: View {
                         .buttonStyle(.plain)
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
-                                Task { await vm.deleteDocument(doc, employeeId: employeeId) }
+                                Task {
+                                    do {
+                                        try await vm.deleteDocument(doc, employeeId: employeeId)
+                                    } catch {
+                                        vm.errorMessage = "Fehler beim Löschen des Dokuments: \(error.localizedDescription)"
+                                    }
+                                }
                             } label: {
                                 Label("Löschen", systemImage: "trash")
                             }

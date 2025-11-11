@@ -54,11 +54,18 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
 
     // MARK: - Berechtigung
     /// Berechtigung prüfen
-    private func requestPermissionIfNeeded() {
+    func requestPermissionIfNeeded() {
         let status = manager.authorizationStatus
-        if status == .notDetermined {
+        switch status {
+        case .notDetermined:
             manager.requestWhenInUseAuthorization()
             manager.requestAlwaysAuthorization()
+        case .denied, .restricted:
+            print("⚠️ Standortzugriff wurde verweigert — bitte in den Einstellungen aktivieren.")
+        case .authorizedAlways, .authorizedWhenInUse:
+            break
+        @unknown default:
+            break
         }
     }
 
@@ -73,6 +80,7 @@ class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDele
             }
         case .denied, .restricted:
             print("❌ Kein Standortzugriff")
+            print("❌ Kein Standortzugriff — bitte Berechtigungen in den Systemeinstellungen aktivieren.")
         default:
             break
         }

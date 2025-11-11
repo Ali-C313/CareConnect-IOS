@@ -16,63 +16,72 @@ struct EmployeesListView: View {
     /// UI-Inhalt
     var body: some View {
         NavigationStack {
-            List(viewModel.employees) { employee in
-                NavigationLink {
-                    EmployeeProfileView(employeeId: employee.id ?? "")
-                } label: {
-                    HStack(spacing: 12) {
-                        // Profilbild
-                        if let urlString = employee.profileImageURL,
-                           let url = URL(string: urlString) {
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                        .frame(width: 44, height: 44)
-                                case .success(let image):
-                                    image.resizable()
-                                        .scaledToFill()
-                                        .frame(width: 44, height: 44)
-                                        .clipShape(Circle())
-                                case .failure:
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.employees) { employee in
+                        NavigationLink(destination: EmployeeProfileView(employeeId: employee.id ?? "")) {
+                            HStack(spacing: 14) {
+                                if let urlString = employee.profileImageURL, let url = URL(string: urlString) {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            ProgressView()
+                                                .frame(width: 56, height: 56)
+                                        case .success(let image):
+                                            image.resizable()
+                                                .scaledToFill()
+                                                .frame(width: 56, height: 56)
+                                                .clipShape(Circle())
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(CCDesign.accent.opacity(0.3), lineWidth: 1)
+                                                )
+                                        case .failure:
+                                            Circle()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 56, height: 56)
+                                                .overlay(
+                                                    Image(systemName: "person.fill")
+                                                        .foregroundColor(.gray)
+                                                )
+                                        @unknown default:
+                                            EmptyView()
+                                        }
+                                    }
+                                } else {
                                     Circle()
                                         .fill(Color.gray.opacity(0.3))
-                                        .frame(width: 44, height: 44)
+                                        .frame(width: 56, height: 56)
                                         .overlay(
                                             Image(systemName: "person.fill")
                                                 .foregroundColor(.gray)
                                         )
-                                @unknown default:
-                                    EmptyView()
                                 }
-                            }
-                        } else {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 44, height: 44)
-                                .overlay(
-                                    Image(systemName: "person.fill")
-                                        .foregroundColor(.gray)
-                                )
-                        }
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(employee.firstName) \(employee.lastName)")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            Text(employee.role)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("\(employee.firstName) \(employee.lastName)")
+                                        .font(.headline)
+                                        .foregroundColor(CCDesign.textPrimary)
+                                    Text(employee.role)
+                                        .font(.subheadline)
+                                        .foregroundColor(CCDesign.textSecondary)
+                                }
+                                Spacer()
+                            }
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 16).fill(CCDesign.card))
+                            .shadow(color: CCDesign.textSecondary.opacity(0.1), radius: 4, x: 0, y: 2)
+                            .padding(.horizontal)
                         }
                     }
-                    .padding(.vertical, 4)
                 }
+                .padding(.top, 8)
             }
-            .listStyle(.insetGrouped)
+            .background(CCDesign.background.ignoresSafeArea())
+            .navigationTitle("Mitarbeiter")
             .task {
                 await viewModel.loadEmployees()
             }
-            .navigationTitle("Mitarbeiter")
         }
     }
 }
