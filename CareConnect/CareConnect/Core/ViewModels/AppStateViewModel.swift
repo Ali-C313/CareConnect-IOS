@@ -39,10 +39,37 @@ final class AppStateViewModel: ObservableObject {
     private let service: FirebaseServiceType = FirebaseLiveService()
     private var listeners: [ListenerRegistration] = []
     private var listenersStarted = false
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
         checkLoginState()
         print("✅ AppStateViewModel initialisiert")
+        verifyFirestoreConnection()
+        setupForegroundReload()
+    }
+
+    // MARK: - Firestore Connection Test
+    private func verifyFirestoreConnection() {
+        let db = Firestore.firestore()
+        db.collection("test").limit(to: 1).getDocuments { snapshot, error in
+            if let error = error {
+                print("❌ Firestore-Verbindungstest fehlgeschlagen:", error.localizedDescription)
+            } else {
+                print("✅ Firestore-Verbindung erfolgreich geprüft (\(snapshot?.count ?? 0) Dokumente abrufbar).")
+            }
+        }
+    }
+
+    // MARK: - Foreground Reload
+    private func setupForegroundReload() {
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                print("🔔 App kommt in den Vordergrund – reloading Firestore-Daten …")
+                Task { await self.reloadData() }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: Auth
@@ -77,6 +104,7 @@ final class AppStateViewModel: ObservableObject {
     func logout() {
         do {
             try Auth.auth().signOut()
+            print("👋 Benutzer erfolgreich abgemeldet.")
         } catch {
             print("❌ Logout:", error.localizedDescription)
         }
@@ -88,10 +116,17 @@ final class AppStateViewModel: ObservableObject {
         employees.removeAll()
         patients.removeAll()
         orders.removeAll()
+        currentPatient = nil
+        Task { await self.reloadData() }
     }
 
     // MARK: Rolle laden (Patient/Mitarbeiter)
     private func loadUserRole(uid: String) async {
+        guard !uid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ Ungültige UID für loadUserRole()")
+            role = nil
+            return
+        }
         let db = Firestore.firestore()
         do {
             let emp = try await db.collection("employees").document(uid).getDocument()
@@ -133,30 +168,50 @@ final class AppStateViewModel: ObservableObject {
     }
 
     func observeAll() async {
-        // verhinder Mehrfach-Registrierung
         if listenersStarted == false { listenersStarted = true }
         await clearListeners()
 
-        listeners.append(service.listen(to: "employees", as: Employee.self) { [weak self] res in
-            if case .success(let list) = res {
-                print("📥 Employees empfangen: \(list.count)")
-                Task { @MainActor in self?.employees = list }
+        // Employees
+        let employeeListener = service.listen(to: "employees", as: Employee.self) { [weak self] res in
+            switch res {
+            case .success(let list):
+                Task { @MainActor in
+                    self?.employees = list
+                    print("📥 Employees empfangen: \(list.count)")
+                }
+            case .failure(let error):
+                print("⚠️ Listener-Fehler bei employees:", error.localizedDescription)
             }
-        })
-        listeners.append(service.listen(to: "patients", as: Patient.self) { [weak self] res in
-            if case .success(let list) = res {
-                print("📥 Patients empfangen: \(list.count)")
+        }
+        listeners.append(employeeListener)
+
+        // Patients
+        let patientListener = service.listen(to: "patients", as: Patient.self) { [weak self] res in
+            switch res {
+            case .success(let list):
                 Task { @MainActor in
                     self?.patients = list
+                    print("📥 Patients empfangen: \(list.count)")
                 }
+            case .failure(let error):
+                print("⚠️ Listener-Fehler bei patients:", error.localizedDescription)
             }
-        })
-        listeners.append(service.listen(to: "orders", as: Order.self) { [weak self] res in
-            if case .success(let list) = res {
-                print("📥 Orders empfangen: \(list.count)")
-                Task { @MainActor in self?.orders = list }
+        }
+        listeners.append(patientListener)
+
+        // Orders
+        let orderListener = service.listen(to: "orders", as: Order.self) { [weak self] res in
+            switch res {
+            case .success(let list):
+                Task { @MainActor in
+                    self?.orders = list
+                    print("📥 Orders empfangen: \(list.count)")
+                }
+            case .failure(let error):
+                print("⚠️ Listener-Fehler bei orders:", error.localizedDescription)
             }
-        })
+        }
+        listeners.append(orderListener)
     }
 
     // MARK: Aktueller Mitarbeiter
@@ -174,7 +229,6 @@ final class AppStateViewModel: ObservableObject {
         let db = Firestore.firestore()
 
         do {
-            // Dokument mit Auth-UID
             let docByID = try await db.collection("patients").document(user.uid).getDocument()
             if docByID.exists {
                 currentPatient = try docByID.data(as: Patient.self)
@@ -182,7 +236,6 @@ final class AppStateViewModel: ObservableObject {
                 return
             }
 
-            // Suche per Feld 'uid'
             let qByUID = try await db.collection("patients")
                 .whereField("uid", isEqualTo: user.uid)
                 .limit(to: 1)
@@ -193,7 +246,6 @@ final class AppStateViewModel: ObservableObject {
                 return
             }
 
-            // Suche per E-Mail
             if let email = user.email, !email.isEmpty {
                 let qByEmail = try await db.collection("patients")
                     .whereField("email", isEqualTo: email)
@@ -209,8 +261,12 @@ final class AppStateViewModel: ObservableObject {
             print("⚠️ Kein Patientenprofil für Benutzer mit UID \(user.uid) gefunden — Profil wird automatisch erstellt.")
             await ensureCurrentPatientExistsFixed()
 
-        } catch {
-            print("❌ Fehler beim Laden des Patientenprofils:", error.localizedDescription)
+        } catch let error as NSError {
+            if error.domain == "FIRFirestoreErrorDomain" {
+                print("⚠️ Firestore-Zugriff verweigert (Permissions).")
+            } else {
+                print("❌ Fehler beim Laden des Patientenprofils:", error.localizedDescription)
+            }
             currentPatient = nil
         }
     }
@@ -221,7 +277,6 @@ final class AppStateViewModel: ObservableObject {
         let db = Firestore.firestore()
 
         do {
-            // Prüfe, ob der Patient bereits existiert
             let existing = try await db.collection("patients")
                 .whereField("uid", isEqualTo: user.uid)
                 .limit(to: 1)
@@ -232,7 +287,6 @@ final class AppStateViewModel: ObservableObject {
                 return
             }
 
-            // Neues leeres Profil anlegen
             let email = user.email ?? ""
             try await db.collection("patients").document(user.uid).setData([
                 "uid": user.uid,
@@ -255,10 +309,13 @@ final class AppStateViewModel: ObservableObject {
     func ensureCurrentPatientExistsFixed() async {
         guard let user = currentUser else { return }
         guard role == "Patient" else { return }
+        guard !user.uid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ Ungültige UID – Patient kann nicht erstellt werden.")
+            return
+        }
         let db = Firestore.firestore()
 
         do {
-            // Prüfe, ob das Patientenprofil bereits existiert (Dokument-ID = UID)
             let existingDoc = try await db.collection("patients").document(user.uid).getDocument()
             if existingDoc.exists {
                 print("ℹ️ Patientenprofil existiert bereits für UID \(user.uid)")
@@ -266,7 +323,6 @@ final class AppStateViewModel: ObservableObject {
                 return
             }
 
-            // Neues Profil unter der Auth-UID erstellen
             let email = user.email ?? ""
             try await db.collection("patients").document(user.uid).setData([
                 "uid": user.uid,
@@ -291,6 +347,7 @@ final class AppStateViewModel: ObservableObject {
         do {
             try await service.updateEmployee(id: id, fields: ["status": status.rawValue])
             staffStatus = status
+            Task { await self.reloadData() }
         } catch {
             print("❌ Status-Update:", error.localizedDescription)
         }
@@ -313,7 +370,7 @@ final class AppStateViewModel: ObservableObject {
         let s = q.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !s.isEmpty else { return orders }
         return orders.filter {
-            let fullName = $0.patientName.lowercased()
+            let fullName = ($0.patientName ?? "").lowercased()
             return ($0.notes?.joined(separator: " ").lowercased().contains(s) ?? false) || fullName.contains(s)
         }
     }
@@ -323,6 +380,25 @@ final class AppStateViewModel: ObservableObject {
         for l in listeners { l.remove() }
         listeners.removeAll()
         listenersStarted = false
+    }
+
+    // MARK: - Reload Firestore Data
+    func reloadData() async {
+        print("🔄 Starte Daten-Neuladen (Employees, Patients, Orders)...")
+        async let e: [Employee] = (try? await service.fetchEmployees()) ?? []
+        async let p: [Patient]  = (try? await service.fetchPatients())  ?? []
+        async let o: [Order]    = (try? await service.fetchOrders())    ?? []
+        
+        let employeesResult = await e
+        let patientsResult  = await p
+        let ordersResult    = await o
+        
+        await MainActor.run {
+            self.employees = employeesResult
+            self.patients  = patientsResult
+            self.orders    = ordersResult
+            print("✅ Firestore-Daten neu geladen (\(employeesResult.count) Mitarbeiter, \(patientsResult.count) Patienten, \(ordersResult.count) Aufträge).")
+        }
     }
 
 deinit {
@@ -336,23 +412,31 @@ deinit {
 
 // MARK: Dringlicher Auftrag (Emergency Order)
 func createEmergencyOrder(for userID: String) async {
-    print("🆘 Erstelle dringlichen Auftrag für Benutzer-ID: \(userID)")
+    let trimmedID = userID.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmedID.isEmpty else {
+        print("⚠️ Ungültige Benutzer-ID für Notfallauftrag.")
+        return
+    }
+
+    print("🆘 Erstelle dringlichen Auftrag für Benutzer-ID: \(trimmedID)")
     let db = Firestore.firestore()
     let orderID = UUID().uuidString
     let orderData: [String: Any] = [
         "id": orderID,
-        "assignedTo": userID,
+        "patientId": trimmedID,
         "patientName": "",
         "description": "Notfallauftrag",
         "createdBy": Auth.auth().currentUser?.uid ?? "unknown",
-        "createdAt": Timestamp(date: Date()),
+        "createdAt": FieldValue.serverTimestamp(),
         "dueDate": Timestamp(date: Date()),
         "state": "offen",
         "notes": ["Automatisch generierter Notfallauftrag"]
     ]
+
     do {
         try await db.collection("orders").document(orderID).setData(orderData)
         print("✅ Notfallauftrag erfolgreich erstellt.")
+        Task { await self.reloadData() }
     } catch {
         print("❌ Fehler beim Erstellen des Notfallauftrags:", error.localizedDescription)
     }

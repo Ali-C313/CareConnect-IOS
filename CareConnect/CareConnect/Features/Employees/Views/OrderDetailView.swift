@@ -24,6 +24,7 @@ struct OrderDetailView: View {
     @State private var showCompletionAlert = false
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var showEditSheet = false
 
     /// Live-Tracking
     @State private var locationListener: ListenerRegistration?
@@ -33,69 +34,25 @@ struct OrderDetailView: View {
     @State private var etaText: String? = nil
 
     var body: some View {
+        mainView
+    }
+
+    private var mainView: some View {
         ZStack {
-            // Consistent background for light/dark
-            CCDesign.background
-                .ignoresSafeArea()
-            // Subtle unified gradient for depth
-            LinearGradient(
-                colors: [
-                    CCDesign.background.opacity(0.95),
-                    CCDesign.accent.opacity(0.07)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 22) {
-                    // MARK: - Header Card
-                    headerSection
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-
-                    // MARK: - Status Card
-                    statusSection
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
-
-                    // MARK: - Live Map Card
-                    if order.state == .aktuell {
-                        liveMapSection
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    }
-
-                    // MARK: - Patient Card
-                    if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }) {
-                        patientSection(patient)
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    }
-
-                    // MARK: - Action Card
-                    actionSection
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
-                }
-                .padding(.horizontal)
-                .padding(.top, 20)
-                .padding(.bottom, 32)
-                .animation(.easeInOut(duration: 0.35), value: order.state)
-                .animation(.easeInOut(duration: 0.35), value: etaText)
-            }
-            .scrollContentBackground(.hidden)
+            backgroundLayer
+            contentList
 
             if isProcessing {
-                ZStack {
-                    Color.black.opacity(0.35).ignoresSafeArea()
-                    ProgressView("Wird aktualisiert …")
-                        .padding()
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-                        .shadow(radius: 6)
-                }
+                processingOverlay
             }
         }
         .onAppear {
             if order.state == .aktuell {
                 startLiveTracking()
             } else if order.state == .offen {
+                Task {
+                    await updateOrderToAktuell()
+                }
                 preparePatientCoordinate()
             }
         }
@@ -116,6 +73,83 @@ struct OrderDetailView: View {
                 }
             }
         } message: { Text("Dieser Auftrag wird als erledigt markiert.") }
+        .sheet(isPresented: $showEditSheet) {
+            NewOrderSheet(isPresented: $showEditSheet, existingOrder: order)
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundLayer: some View {
+        // Consistent background for light/dark
+        CCDesign.background
+            .ignoresSafeArea()
+        // Subtle unified gradient for depth
+        LinearGradient(
+            colors: [
+                CCDesign.background.opacity(0.95),
+                CCDesign.accent.opacity(0.07)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+
+    private var contentList: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 22) {
+                Group {
+                    // MARK: - Header Card
+                    HeaderCard(order: order)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+
+                    // MARK: - Status Card
+                    StatusCard(order: order)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+
+                Group {
+                    // MARK: - Live Map Card
+                    if order.state == .aktuell {
+                        LiveMapCard(order: order,
+                                    employeeCoordinate: employeeCoordinate,
+                                    patientCoordinate: patientCoordinate,
+                                    etaText: etaText)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+
+                    // MARK: - Patient Card
+                    if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.patientId ?? "") }) {
+                        PatientCard(patient: patient)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+
+                    // MARK: - Action Card
+                    ActionCard(
+                        onEdit: { showEditSheet = true },
+                        onComplete: { showCompletionAlert = true },
+                        onDelete: { Task { await deleteOrder() } }
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 20)
+            .padding(.bottom, 32)
+            // Keep a single animation to reduce type complexity
+            .animation(.easeInOut(duration: 0.35), value: order.state)
+        }
+        .scrollContentBackground(.hidden)
+    }
+
+    private var processingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35).ignoresSafeArea()
+            ProgressView("Wird aktualisiert …")
+                .padding()
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .shadow(radius: 6)
+        }
     }
 
     // MARK: - Header
@@ -138,12 +172,19 @@ struct OrderDetailView: View {
                         .foregroundStyle(CCDesign.accent)
                 }
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(order.patientName)
+                    Text(order.patientName ?? "Unbekannter Patient")
                         .font(.title3.bold())
                         .foregroundStyle(CCDesign.textPrimary)
                     Text("Patientenauftrag")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                    if !order.description.isEmpty {
+                        let desc = order.description
+                        Text(desc)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 2)
+                    }
                 }
                 Spacer()
             }
@@ -328,9 +369,15 @@ struct OrderDetailView: View {
                     Text(patient.name)
                         .font(.title2.bold())
                         .foregroundStyle(CCDesign.textPrimary)
-                    HStack(spacing: 6) {
-                        if let birthTimestamp = patient.birthDate {
-                            let birthDate = birthTimestamp.dateValue()
+                    if let birthTimestamp = patient.birthDate {
+                        let birthDate = birthTimestamp.dateValue()
+                        HStack(spacing: 6) {
+                            Image(systemName: "calendar")
+                                .font(.subheadline)
+                                .foregroundStyle(CCDesign.accent)
+                            Text(birthDate, style: .date)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
                             Image(systemName: "clock.badge.checkmark")
                                 .font(.subheadline)
                                 .foregroundStyle(CCDesign.accent)
@@ -507,6 +554,9 @@ struct OrderDetailView: View {
                 bigButton(title: "Auftrag annehmen", color: CCDesign.accent, icon: "checkmark.circle.fill") {
                     await accept()
                 }
+                bigButton(title: "Auftrag schließen", color: .red, icon: "xmark.circle.fill") {
+                    dismiss()
+                }
             } else if order.state == .aktuell {
                 bigButton(title: "Auftrag abschließen", color: .green, icon: "checkmark.seal.fill") {
                     showCompletionAlert = true
@@ -527,6 +577,9 @@ struct OrderDetailView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                     .shadow(color: Color.green.opacity(0.11), radius: 4, x: 0, y: 2)
+                bigButton(title: "Auftrag löschen", color: .red, icon: "trash.fill") {
+                    await deleteOrder()
+                }
             }
         }
         .padding(16)
@@ -592,6 +645,44 @@ struct OrderDetailView: View {
         }
     }
 
+    private func deleteOrder() async {
+        guard let id = order.id, !id.trimmingCharacters(in: .whitespaces).isEmpty else {
+            showError = true
+            errorMessage = "Fehler: Auftrags-ID fehlt oder ist ungültig."
+            return
+        }
+
+        do {
+            try await service.deleteOrder(id: id)
+            dismiss()
+        } catch {
+            showError = true
+            errorMessage = "Fehler beim Löschen: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Statuswechsel auf 'aktuell' bei Ansicht
+    private func updateOrderToAktuell() async {
+        guard let id = order.id else {
+            print("⚠️ Keine Order-ID verfügbar, Statuswechsel nicht möglich.")
+            return
+        }
+
+        do {
+            try await service.updateOrder(id: id, fields: [
+                "state": OrderState.aktuell.rawValue,
+                "activatedAt": Date()
+            ])
+            if let index = appState.orders.firstIndex(where: { $0.id == id }) {
+                appState.orders[index].state = .aktuell
+            }
+            startLiveTracking()
+            print("✅ Auftrag erfolgreich auf 'aktuell' gesetzt.")
+        } catch {
+            print("❌ Fehler beim Setzen auf 'aktuell': \(error.localizedDescription)")
+        }
+    }
+
     private func icon(for state: OrderState) -> String {
         switch state {
         case .offen: return "tray.full.fill"
@@ -621,10 +712,17 @@ struct OrderDetailView: View {
     // MARK: - Live Tracking
     private func startLiveTracking() {
         preparePatientCoordinate()
-        guard let employeeId = order.assignedTo else { return }
+        guard let employeeId = order.assignedTo,
+              !employeeId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ Kein gültiger Mitarbeiter für Live-Tracking vorhanden.")
+            return
+        }
+
         let db = Firestore.firestore()
         locationListener = db.collection("employeeLocations").document(employeeId).addSnapshotListener { snap, _ in
-            guard let data = snap?.data(), let lat = data["lat"] as? CLLocationDegrees, let lon = data["lon"] as? CLLocationDegrees else { return }
+            guard let data = snap?.data(),
+                  let lat = data["lat"] as? CLLocationDegrees,
+                  let lon = data["lon"] as? CLLocationDegrees else { return }
             let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             employeeCoordinate = coord
             updateRegion()
@@ -639,7 +737,7 @@ struct OrderDetailView: View {
 
     private func preparePatientCoordinate() {
         guard patientCoordinate == nil else { return }
-        if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.assignedTo ?? "") }), let line = addressLine(patient) {
+        if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.patientId ?? "") }), let line = addressLine(patient) {
             let geocoder = CLGeocoder()
             geocoder.geocodeAddressString(line) { placemarks, _ in
                 if let loc = placemarks?.first?.location?.coordinate {
@@ -703,3 +801,4 @@ private func calculateAge(from birthDate: Date) -> Int {
     ))
     .environmentObject(AppStateViewModel())
 }
+

@@ -54,18 +54,27 @@ final class OrderService: ObservableObject {
     // MARK: - Build combined display model with employee/patient data
     private func buildOrderDisplayModel(for order: Order) async -> OrderDisplayModel {
         async let employee = fetchEmployee(by: order.employeeId ?? order.createdBy)
-        async let patient = fetchPatient(by: order.assignedTo)
-        async let location = fetchEmployeeLocation(for: order.createdBy)
+        async let patient = fetchPatient(by: order.patientId)
+        async let location = fetchEmployeeLocation(for: order.employeeId ?? order.createdBy)
         
         let (emp, pat, loc) = await (employee, patient, location)
         
+        let employeeName = [emp?.firstName, emp?.lastName]
+            .compactMap { $0 }
+            .joined(separator: " ")
+            .trimmingCharacters(in: .whitespaces)
+        
+        let patientName = [pat?.firstName, pat?.lastName]
+            .compactMap { $0 }
+            .joined(separator: " ")
+            .trimmingCharacters(in: .whitespaces)
+        
         return OrderDisplayModel(
             id: order.id ?? UUID().uuidString,
-            description: order.description ?? "",
-            // order.state is not optional, access .rawValue directly
+            description: order.description,
             state: order.state.rawValue,
-            createdBy: emp != nil ? "\(emp!.firstName) \(emp!.lastName)" : "Unbekannt",
-            patientName: pat?.firstName != nil ? "\(pat!.firstName!) \(pat!.lastName ?? "")" : (order.patientName ?? "Unbekannt"),
+            createdBy: employeeName.isEmpty ? "Unbekannt" : employeeName,
+            patientName: !patientName.isEmpty ? patientName : (order.patientName ?? "Unbekannt"),
             createdAt: order.createdAt?.dateValue(),
             dueDate: order.dueDate?.dateValue(),
             employeeLocation: loc,

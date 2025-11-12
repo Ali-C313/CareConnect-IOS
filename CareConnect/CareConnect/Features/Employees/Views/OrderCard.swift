@@ -18,9 +18,9 @@ struct OrderCard: View {
     /// Patientenname
     var patientName: String {
         if let patient = appState.patients.first(where: {
-            let emailMatch = (($0.email ?? "").lowercased() == order.patientName.lowercased())
+            let emailMatch = (($0.email ?? "").lowercased() == (order.patientName ?? "").lowercased())
             let fullName = ((($0.firstName ?? "") + " " + ($0.lastName ?? "")).trimmingCharacters(in: .whitespaces)).lowercased()
-            let nameMatch = (fullName == order.patientName.lowercased())
+            let nameMatch = (fullName == (order.patientName ?? "").lowercased())
             return ($0.uid == order.assignedTo) || emailMatch || nameMatch
         }) {
             let first = patient.firstName ?? ""
@@ -30,7 +30,7 @@ struct OrderCard: View {
             }
             return patient.email ?? "Unbekannt"
         }
-        let fallback = order.patientName.isEmpty ? "Unbekannt" : order.patientName
+        let fallback = (order.patientName ?? "").isEmpty ? "Unbekannt" : (order.patientName ?? "")
         return fallback
     }
     

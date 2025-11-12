@@ -100,7 +100,7 @@ struct CurrentOrderView: View {
                 let uidMatch = (patient.uid ?? "") == (order.assignedTo ?? "")
                 let fullName = ((patient.firstName ?? "") + " " + (patient.lastName ?? "")).trimmingCharacters(in: .whitespaces).lowercased()
                 let email = (patient.email ?? "").lowercased()
-                let target = order.patientName.lowercased()
+                let target = (order.patientName ?? "").lowercased()
                 return uidMatch || fullName == target || email == target
             })
             self.employee = employees.first(where: { employee in

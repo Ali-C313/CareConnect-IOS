@@ -27,4 +27,6 @@ protocol FirebaseServiceType {
     /// Live-Listener starten
     func listen<T: Decodable>(to collection: String, as type: T.Type,
                               onChange: @escaping (Result<[T], Error>) -> Void) -> ListenerRegistration
+    /// Auftrag löschen
+    func deleteOrder(id: String) async throws
 }

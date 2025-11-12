@@ -37,8 +37,8 @@ final class CurrentOrderViewModel: ObservableObject {
                 let uidMatch = (patient.uid ?? "") == (order.assignedTo ?? "")
                 let fullName = ((patient.firstName ?? "") + " " + (patient.lastName ?? "")).trimmingCharacters(in: .whitespaces).lowercased()
                 let email = (patient.email ?? "").lowercased()
-                let nameMatch = fullName == order.patientName.lowercased()
-                let emailMatch = email == order.patientName.lowercased()
+                let nameMatch = fullName == (order.patientName ?? "").lowercased()
+                let emailMatch = email == (order.patientName ?? "").lowercased()
                 return uidMatch || nameMatch || emailMatch
             })
 
