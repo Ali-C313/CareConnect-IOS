@@ -50,6 +50,7 @@ struct PatientSettingsView: View {
                 }
             }
             .navigationTitle("Einstellungen")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showEditProfile, onDismiss: {
                 Task { await appState.loadInitial() }
             }) {

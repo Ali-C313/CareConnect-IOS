@@ -33,6 +33,7 @@ struct AddMedicineSheet: View {
                 }
             }
             .navigationTitle("Medikament hinzufügen")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {

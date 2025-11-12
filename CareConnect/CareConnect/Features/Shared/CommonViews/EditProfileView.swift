@@ -130,6 +130,7 @@ struct EditProfileView: View {
             }
             .background(CCDesign.background)
             .navigationTitle("Profil bearbeiten")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Abbrechen") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

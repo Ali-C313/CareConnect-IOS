@@ -223,6 +223,7 @@ struct PatientOrdersView: View {
             .scrollContentBackground(.hidden)
             .background(CCDesign.background.ignoresSafeArea())
             .navigationTitle("Live Notruf")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
     

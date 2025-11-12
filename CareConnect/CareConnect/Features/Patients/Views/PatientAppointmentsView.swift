@@ -59,6 +59,7 @@ struct PatientAppointmentsView: View {
                 }
             }
             .navigationTitle("Termine")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {

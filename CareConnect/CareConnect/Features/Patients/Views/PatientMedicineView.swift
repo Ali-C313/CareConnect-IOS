@@ -37,6 +37,7 @@ struct PatientMedicineView: View {
                 }
             }
             .navigationTitle("Medikamente")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {

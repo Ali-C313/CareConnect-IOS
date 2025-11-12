@@ -111,6 +111,7 @@ struct LoginView: View {
                 }
             }
             .navigationTitle("CareConnect")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

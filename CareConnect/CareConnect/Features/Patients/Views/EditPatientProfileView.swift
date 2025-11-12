@@ -240,6 +240,7 @@ struct EditPatientProfileView: View {
                 }
             }
             .navigationTitle("Profil bearbeiten")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") { dismiss() }

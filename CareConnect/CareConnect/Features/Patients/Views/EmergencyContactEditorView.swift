@@ -145,6 +145,7 @@ struct EmergencyContactEditorView: View {
             }
             .background(CCDesign.background.ignoresSafeArea())
             .navigationTitle("Notfallkontakt hinzufügen")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
