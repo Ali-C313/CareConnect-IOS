@@ -49,12 +49,8 @@ struct OrderDetailView: View {
         .onAppear {
             if order.state == .aktuell {
                 startLiveTracking()
-            } else if order.state == .offen {
-                Task {
-                    await updateOrderToAktuell()
-                }
-                preparePatientCoordinate()
             }
+            preparePatientCoordinate()
         }
         .onDisappear {
             stopLiveTracking()
