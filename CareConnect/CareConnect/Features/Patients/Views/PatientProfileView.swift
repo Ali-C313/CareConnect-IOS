@@ -42,10 +42,6 @@ struct PatientProfileView: View {
                                     .font(.title2).bold()
                                     .foregroundColor(.primary)
 
-                                if let age = patient.age {
-                                    Text("\(age) Jahre")
-                                        .foregroundColor(.secondary)
-                                }
 
                                 // Adresse + Stadt (tappbar → Maps)
                                 let addrText = [patient.address ?? "", patient.city ?? ""].filter{ !$0.isEmpty }.joined(separator: ", ")

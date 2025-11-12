@@ -313,22 +313,42 @@ struct OrderDetailView: View {
             .padding(.bottom, 4)
             Divider()
                 .padding(.vertical, 6)
-            // Name + Alter
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "person.fill")
-                    .foregroundStyle(CCDesign.accent)
-                VStack(alignment: .leading, spacing: 2) {
+            // Name + Alter (modern card design)
+            HStack(alignment: .center, spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(colors: [CCDesign.accent.opacity(0.25), CCDesign.card.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 56, height: 56)
+                        .shadow(color: CCDesign.accent.opacity(0.2), radius: 6, x: 0, y: 3)
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                VStack(alignment: .leading, spacing: 4) {
                     Text(patient.name)
-                        .font(.title3.bold())
+                        .font(.title2.bold())
                         .foregroundStyle(CCDesign.textPrimary)
-                    if let age = patient.age {
-                        Text("\(age) Jahre")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        if let birthTimestamp = patient.birthDate {
+                            let birthDate = birthTimestamp.dateValue()
+                            Image(systemName: "clock.badge.checkmark")
+                                .font(.subheadline)
+                                .foregroundStyle(CCDesign.accent)
+                            Text("\(calculateAge(from: birthDate)) Jahre")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
+                Spacer()
             }
-            .padding(.bottom, 6)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(LinearGradient(colors: [CCDesign.card.opacity(0.9), CCDesign.accent.opacity(0.07)], startPoint: .topLeading, endPoint: .bottomTrailing))
+            )
+            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 3)
+            .padding(.bottom, 10)
             // Kontakt
             if let phone = patient.phone, !phone.isEmpty {
                 Divider().padding(.vertical, 4)
@@ -661,6 +681,13 @@ struct OrderDetailView: View {
             }
         }
     }
+}
+
+private func calculateAge(from birthDate: Date) -> Int {
+    let now = Date()
+    let calendar = Calendar.current
+    let ageComponents = calendar.dateComponents([.year, .month, .day], from: birthDate, to: now)
+    return ageComponents.year ?? 0
 }
 
 #Preview {

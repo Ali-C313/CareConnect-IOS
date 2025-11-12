@@ -25,21 +25,11 @@ struct PatientMedicineView: View {
                                 Label("\(med.name) – \(med.dosage)", systemImage: "pills.fill")
                                     .swipeActions(edge: .trailing) {
                                         Button(role: .destructive) {
-                                            if let index = viewModel.medicines.firstIndex(where: { $0.id == med.id }) {
-                                                viewModel.medicines.remove(at: index)
-                                            }
+                                            viewModel.deleteMedicine(med)
                                         } label: {
                                             Label("Löschen", systemImage: "trash")
                                         }
-
-                                        Button {
-                                            // Beispiel: hier könnte man das Sheet zum Bearbeiten öffnen
-                                            // z. B. viewModel.editingMedicine = med
-                                            // viewModel.showEditSheet = true
-                                        } label: {
-                                            Label("Bearbeiten", systemImage: "pencil")
-                                        }
-                                        .tint(.blue)
+                                        .tint(.red)
                                     }
                             }
                         }

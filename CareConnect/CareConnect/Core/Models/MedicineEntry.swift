@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 struct MedicineEntry: Identifiable, Codable {
-    let id: UUID = UUID()
+    @DocumentID var id: String?
     var name: String
     var dosage: String
     var timeOfDay: TimeOfDay

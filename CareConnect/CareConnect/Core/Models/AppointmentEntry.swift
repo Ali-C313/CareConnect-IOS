@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import FirebaseFirestore
 
-struct AppointmentEntry: Identifiable, Codable, Equatable {
+struct AppointmentEntry: Codable, Equatable {
     @DocumentID var id: String?
     var what: String            // Wo/Was (z. B. „Arzttermin – Orthopädie“)
     var address: String         // Adresse
@@ -35,4 +35,14 @@ struct AppointmentEntry: Identifiable, Codable, Equatable {
     var hasImportantItems: Bool {
         !bringItems.isEmpty
     }
+
+    /// Eine stabile eindeutige ID, auch wenn Firestore-ID fehlt
+    var stableId: String {
+        id ?? UUID().uuidString
+    }
+}
+
+extension AppointmentEntry: Identifiable {
+    /// Identifiable conformance using a stable ID
+    var identifiableId: String { id ?? UUID().uuidString }
 }

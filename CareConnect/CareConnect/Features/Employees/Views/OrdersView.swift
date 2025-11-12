@@ -101,6 +101,7 @@ struct OrdersView: View {
             }
             .background(CCDesign.background.ignoresSafeArea())
             .navigationTitle("Aufträge")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
