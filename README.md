@@ -14,7 +14,8 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Schnellzugriff auf aktuelle Aufträge  
 
 **Screenshot:**  
-![Home](images/home.jpg) (images/pat.home.jpg)
+![Miarbeiter-Home](images/home.jpg)
+![Patienten-Home](images/pat.home.jpg)
 
 ---
 
@@ -35,7 +36,9 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Live-Notruf-Bereich  
 
 **Screenshot:**  
-![Aufträge](images/auftraege.jpg) (images/auftraege1.jpg) (images/pat.auftraege.jpg)
+![Miarbeiter-Aufträge](images/auftraege.jpg)
+![Miarbeiter-Aufträge](images/auftraege1.jpg)
+![Patienten-Aufträge](images/pat.auftraege.jpg)
 
 ---
 
@@ -77,7 +80,8 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Abmelden  
 
 **Screenshot:**  
-![Einstellungen](images/einstellungen.jpg) (images/pat.einstellungen.jpg)
+![Mitarbeiter-Einstellungen](images/einstellungen.jpg)
+![Patienten-Einstellungen](images/pat.einstellungen.jpg)
 
 ---
 
