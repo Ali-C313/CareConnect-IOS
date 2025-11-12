@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ActionCard: View {
     var onEdit: (() -> Void)?
+    var onAccept: (() -> Void)?
     var onComplete: (() -> Void)?
     var onDelete: (() -> Void)?
 
@@ -31,6 +32,17 @@ struct ActionCard: View {
                         .padding()
                         .background(Color.accentColor.opacity(0.15))
                         .foregroundColor(.accentColor)
+                        .cornerRadius(10)
+                }
+
+                Button {
+                    onAccept?()
+                } label: {
+                    Label("Annehmen", systemImage: "checkmark.circle")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue.opacity(0.15))
+                        .foregroundColor(.blue)
                         .cornerRadius(10)
                 }
 
@@ -71,6 +83,7 @@ struct ActionCard: View {
 #Preview {
     ActionCard(
         onEdit: { print("Bearbeiten") },
+        onAccept: { print("Annehmen") },
         onComplete: { print("Abschließen") },
         onDelete: { print("Löschen") }
     )

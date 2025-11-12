@@ -123,6 +123,7 @@ struct OrderDetailView: View {
                     // MARK: - Action Card
                     ActionCard(
                         onEdit: { showEditSheet = true },
+                        onAccept: { Task { await accept() } },
                         onComplete: { showCompletionAlert = true },
                         onDelete: { Task { await deleteOrder() } }
                     )
