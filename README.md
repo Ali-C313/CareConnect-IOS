@@ -1,74 +1,162 @@
-# CareConnect
+# 📱 CareConnect  
+**Die moderne All-in-One Pflege-App für Pflegekräfte & Patienten**
 
-CareConnect ist eine innovative iOS-App, die Pflegekräfte und Patienten unterstützt. Sie bietet eine zentrale Übersicht über Mitarbeitende und Patienten, erleichtert die Arbeitsplanung und steigert die Sicherheit und Qualität der Pflege.  
-
----
-
-## Funktionen
-
-### Mitarbeiterübersicht
-- Zeigt alle Mitarbeitenden in Echtzeit an.  
-- Statusanzeige: z. B. in der Pause, im Außendienst oder verfügbar.  
-- Ermöglicht eine schnelle Koordination im Team.
-
-### Patientenübersicht
-- Alle wichtigen Informationen auf einen Blick:  
-  - Name, Alter und Adresse  
-  - Bekannte Krankheiten  
-  - Aktuelle Medikamente  
-- Schneller Zugriff auf Notfallinformationen.
-
-### Arbeitszeit- und Aufgabenmanagement
-- Übersicht über Arbeitstage, Pausen und Termine.  
-- Echtzeit-Updates für bessere Planung und Koordination.  
-- Erleichtert die Organisation und reduziert Fehler.
-
-### Sicherheit & Gesundheit
-- Erhöht die Patientensicherheit durch zentrale Informationsverwaltung.  
-- Unterstützt Pflegekräfte bei einem gesunden Arbeitsalltag.  
+CareConnect ist eine intuitive, moderne und sichere iOS-App, die speziell für Pflegekräfte entwickelt wurde, um den Alltag einfacher, effizienter und übersichtlicher zu gestalten.  
+Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Live-Notrufen, Profilverwaltung und vielem mehr.
 
 ---
 
-## Vorteile
+# 🌟 Features
 
-- Alles im Blick: Mitarbeitende, Patienten und Aufgaben in Echtzeit.  
-- Vereinfachte Arbeitsplanung und Kommunikation im Team.  
-- Schnellere Reaktionszeiten im Notfall.  
-- Gesundheit und Sicherheit von Pflegekräften und Patienten stehen an erster Stelle.  
+## 🏠 Startseite
+- Begrüßung des Nutzers  
+- Großer Notruf-Button  
+- Schnellzugriff auf aktuelle Aufträge  
 
----
-
-## Installation
-
-1. Xcode öffnen (Version 18 oder neuer empfohlen).  
-2. Das Projekt `CareConnect.xcodeproj` öffnen.  
-3. App auf einem Simulator oder iOS-Gerät starten.  
+**Screenshot:**  
+![Miarbeiter-Home](images/home.jpg)
+![Patienten-Home](images/pat.home.jpg)
 
 ---
 
-## Verwendung
+## 🧑‍🤝‍🧑 Patientenverwaltung
+- Vollständige Liste aller Patienten  
+- Adresse, Kontakt, medizinische Infos  
+- Standort via Apple Maps  
+- Profil bearbeiten  
 
-- Mitarbeitende können ihren Status aktualisieren.  
-- Pflegekräfte haben Zugriff auf Patienteninformationen.  
-- Arbeitszeiten und Aufgaben können einfach verwaltet werden.  
-- Notfallinformationen sind sofort verfügbar.
-
----
-
-## Zukunftspläne / To-Do
-
-- Integration von Push-Benachrichtigungen für dringende Änderungen.  
-- Erweiterung um Kalender- und Terminverwaltung.  
-- Unterstützung für mehrere Pflegeeinrichtungen.  
+**Screenshot:**  
+![Patientenliste](images/patienten_liste.jpg)
 
 ---
 
-## Kontakt
+## 📝 Auftragsmanagement
+- Aktuelle, offene und erledigte Aufträge  
+- Detailansicht mit Karte  
+- Live-Notruf-Bereich  
 
-Bei Fragen oder Feedback:  
-**LinkedIn: www.linkedin.com/in/ali-chehab-32a7a7364** 
-
+**Screenshot:**  
+![Miarbeiter-Aufträge](images/auftraege.jpg)
+![Miarbeiter-Aufträge](images/auftraege1.jpg)
+![Patienten-Aufträge](images/pat.auftraege.jpg)
 
 ---
 
-**Gesund bleiben war noch nie so einfach – mit CareConnect!**
+## 💊 Medikamentenverwaltung
+- Medikamente sortiert nach **Morgen / Mittag / Abend**  
+- Neues Medikament hinzufügen  
+- Übersichtliche Struktur  
+
+**Screenshot:**  
+![Medikamente](images/medikamente.jpg)
+
+---
+
+## 📅 Termine
+- Arzttermine planen  
+- Übersichtliche Listenansicht  
+- Termine hinzufügen  
+
+**Screenshot:**  
+![Termine](images/termine.jpg)
+
+---
+
+## 👤 Patienten-Profil bearbeiten
+- Vorname, Nachname, Adresse  
+- Telefonnummer, E-Mail  
+- Allergien, Krankengeschichte  
+- Profilbild ändern  
+- Passwort ändern  
+
+**Screenshot:**  
+![Patientenprofil](images/patient_profil.jpg)
+
+---
+
+## ⚙️ Einstellungen
+- Profil anzeigen  
+- Dark Mode / Light Mode  
+- Abmelden  
+
+**Screenshot:**  
+![Mitarbeiter-Einstellungen](images/einstellungen.jpg)
+![Patienten-Einstellungen](images/pat.einstellungen.jpg)
+
+---
+
+# 🛠️ Tech-Stack
+
+| Bereich | Technologie |
+|--------|-------------|
+| Sprache | Swift |
+| UI Framework | SwiftUI |
+| Architektur | MVVM |
+| Backend | Firebase Firestore |
+| Authentifizierung | Firebase Auth |
+| Storage | Firebase Storage |
+| Karten | Apple Maps |
+| iOS Version | iOS 17+ |
+| IDE | Xcode 18+ |
+
+---
+
+# 📁 Projektstruktur**
+
+CareConnect/
+│
+├── Views/                # Alle Screens
+├── ViewModels/           # Logik & State Management
+├── Models/               # Datenmodelle
+├── Services/             # Firebase, Location, Auth
+├── Components/           # Wiederverwendbare UI-Bausteine
+├── Resources/            # App Icons, Farben, Assets
+└── CareConnectApp.swift  # Einstiegspunkt der App
+
+---
+
+# 🚀 Installation
+
+### Voraussetzungen:
+- macOS + Xcode 18 oder neuer  
+- Firebase-Projekt  
+- GoogleService-Info.plist  
+
+### Schritte:
+1. Repository klonen  
+2. Projekt in Xcode öffnen  
+3. GoogleService-Info.plist einfügen  
+4. App auf Gerät oder Simulator starten  
+
+---
+
+# 📚 Verwendung
+
+- Patientenprofil anlegen & bearbeiten  
+- Medikamente verwalten  
+- Termine planen  
+- Aufträge einsehen  
+- Notruf schnell auslösen  
+- Profil und Passwort ändern  
+
+---
+
+# 🧭 Roadmap
+
+- Push-Benachrichtigungen  
+- Tourenplanung für Pflegekräfte  
+- Kalender mit Erinnerungen  
+- Exportfunktionen (PDF/CSV)  
+- Rollen- und Rechteverwaltung  
+- Unterstützung mehrerer Pflegeeinrichtungen  
+
+---
+
+# 👤 Kontakt
+
+**Entwickler:** Ali Chehab  
+🔗 LinkedIn: www.linkedin.com/in/ali-chehab-32a7a7364  
+
+---
+
+**CareConnect – Ihre Gesundheit in besten Händen.**
