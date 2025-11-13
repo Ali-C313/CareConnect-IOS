@@ -116,7 +116,7 @@ struct OrderDetailView: View {
 
                     // MARK: - Patient Card
                     if let patient = appState.patients.first(where: { ($0.uid ?? "") == (order.patientId ?? "") }) {
-                        PatientCard(patient: patient)
+                        patientSection(patient)
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
 
@@ -169,7 +169,11 @@ struct OrderDetailView: View {
                         .foregroundStyle(CCDesign.accent)
                 }
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(order.patientName ?? "Unbekannter Patient")
+                    let cleanName = (order.patientName ?? "")
+                        .replacingOccurrences(of: "Optional(", with: "")
+                        .replacingOccurrences(of: ")", with: "")
+
+                    Text(cleanName.isEmpty ? "Unbekannter Patient" : cleanName)
                         .font(.title3.bold())
                         .foregroundStyle(CCDesign.textPrimary)
                     Text("Patientenauftrag")
@@ -622,6 +626,7 @@ struct OrderDetailView: View {
                 "employeeId": emp.id ?? emp.email,
                 "acceptedAt": Date()
             ])
+            NotificationCenter.default.post(name: Notification.Name("OrderAccepted"), object: nil)
             startLiveTracking()
         } catch {
             showError = true

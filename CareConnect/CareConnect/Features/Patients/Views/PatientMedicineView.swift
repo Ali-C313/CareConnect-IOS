@@ -9,7 +9,13 @@ import SwiftUI
 import Foundation
 
 struct PatientMedicineView: View {
-    @StateObject private var viewModel = MedicineViewModel()
+    let patientId: String
+    @StateObject private var viewModel: MedicineViewModel
+
+    init(patientId: String) {
+        self.patientId = patientId
+        _viewModel = StateObject(wrappedValue: MedicineViewModel(patientId: patientId))
+    }
 
     var body: some View {
         NavigationStack {
@@ -36,6 +42,9 @@ struct PatientMedicineView: View {
                     }
                 }
             }
+            .onAppear {
+                viewModel.fetchMedicines()
+            }
             .navigationTitle("Medikamente")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -56,5 +65,5 @@ struct PatientMedicineView: View {
 }
 
 #Preview {
-    PatientMedicineView()
+    PatientMedicineView(patientId: "demoPatient")
 }

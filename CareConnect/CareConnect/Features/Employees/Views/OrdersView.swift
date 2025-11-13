@@ -139,6 +139,9 @@ struct OrdersView: View {
             .onDisappear {
                 vm.stopListening()
             }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("OrderAccepted"))) { _ in
+                selectedOrder = nil   // Sheet automatisch schließen
+            }
             .alert("Fehler", isPresented: $vm.showError) {
                 Button("OK", role: .cancel) { }
             } message: {

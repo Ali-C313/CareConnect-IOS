@@ -418,13 +418,44 @@ func createEmergencyOrder(for userID: String) async {
         return
     }
 
+    // Patientendaten laden
+    var pat: Patient? = nil
+    var patientName = ""
+    var patientAddress = ""
+    var patientCity = ""
+    var patientPhone = ""
+
+    do {
+        let patDoc = try await Firestore.firestore()
+            .collection("patients")
+            .document(trimmedID)
+            .getDocument()
+
+        if let patDecoded = try? patDoc.data(as: Patient.self) {
+            pat = patDecoded
+            let first = patDecoded.firstName ?? ""
+            let last  = patDecoded.lastName ?? ""
+            patientName = "\(first) \(last)".trimmingCharacters(in: .whitespaces)
+            patientAddress = patDecoded.address ?? ""
+            patientCity = patDecoded.city ?? ""
+            patientPhone = patDecoded.phone ?? ""
+        } else {
+            print("⚠️ Patient konnte nicht decodiert werden — Felder bleiben leer.")
+        }
+    } catch {
+        print("⚠️ Fehler beim Laden des Patientenprofils für Notfallauftrag:", error.localizedDescription)
+    }
+
     print("🆘 Erstelle dringlichen Auftrag für Benutzer-ID: \(trimmedID)")
     let db = Firestore.firestore()
     let orderID = UUID().uuidString
     let orderData: [String: Any] = [
         "id": orderID,
         "patientId": trimmedID,
-        "patientName": "",
+        "patientName": patientName,
+        "patientAddress": patientAddress,
+        "patientCity": patientCity,
+        "patientPhone": patientPhone,
         "description": "Notfallauftrag",
         "createdBy": Auth.auth().currentUser?.uid ?? "unknown",
         "createdAt": FieldValue.serverTimestamp(),

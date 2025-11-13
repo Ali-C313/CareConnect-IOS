@@ -7,8 +7,10 @@
 
 import SwiftUI
 import Foundation
+import FirebaseAuth
 
 struct PatientTabView: View {
+    @EnvironmentObject var appState: AppStateViewModel
     /// Tab-Ansicht
     var body: some View {
         TabView {
@@ -22,7 +24,9 @@ struct PatientTabView: View {
                     Label("Aufträge", systemImage: "staroflife.fill")
                 }
 
-            NavigationStack { PatientMedicineView() }
+            NavigationStack {
+                PatientMedicineView(patientId: appState.currentUser?.uid ?? "")
+            }
                 .tabItem {
                     Label("Medizin", systemImage: "cross.case.fill")
                 }
@@ -45,4 +49,5 @@ struct PatientTabView: View {
 
 #Preview {
     PatientTabView()
+        .environmentObject(AppStateViewModel())
 }

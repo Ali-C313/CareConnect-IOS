@@ -38,8 +38,10 @@ struct AddMedicineSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
                         let newMed = MedicineEntry(name: name, dosage: dosage, timeOfDay: selectedTime)
-                        viewModel.medicines.append(newMed)
-                        dismiss()
+                        Task {
+                            await viewModel.addMedicine(newMed)
+                            dismiss()
+                        }
                     }
                     .disabled(name.isEmpty || dosage.isEmpty)
                 }
@@ -53,5 +55,5 @@ struct AddMedicineSheet: View {
 }
 
 #Preview {
-    AddMedicineSheet(viewModel: MedicineViewModel())
+    AddMedicineSheet(viewModel: MedicineViewModel(patientId: "preview-demo-patient"))
 }
