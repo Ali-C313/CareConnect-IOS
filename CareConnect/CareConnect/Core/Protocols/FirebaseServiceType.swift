@@ -30,3 +30,4 @@ protocol FirebaseServiceType {
     /// Auftrag löschen
     func deleteOrder(id: String) async throws
 }
+
