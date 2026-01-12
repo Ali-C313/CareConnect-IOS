@@ -14,8 +14,8 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Schnellzugriff auf aktuelle Aufträge  
 
 **Screenshot:**  
-![Miarbeiter-Home](images/home.jpg)
-![Patienten-Home](images/pat.home.jpg)
+<img src="images/home.jpg" alt="Mitarbeiter-Home" width="300"/>
+<img src="images/pat.home.jpg" alt="Patienten-Home" width="300"/>
 
 ---
 
@@ -26,7 +26,7 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Profil bearbeiten  
 
 **Screenshot:**  
-![Patientenliste](images/patienten_liste.jpg)
+<img src="images/patienten_liste.jpg" alt="Patientenliste" width="300"/>
 
 ---
 
@@ -36,9 +36,9 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Live-Notruf-Bereich  
 
 **Screenshot:**  
-![Miarbeiter-Aufträge](images/auftraege.jpg)
-![Miarbeiter-Aufträge](images/auftraege1.jpg)
-![Patienten-Aufträge](images/pat.auftraege.jpg)
+<img src="images/auftraege.jpg" alt="Mitarbeiter-Aufträge" width="300"/>
+<img src="images/auftraege1.jpg" alt="Mitarbeiter-Aufträge" width="300"/>
+<img src="images/pat.auftraege.jpg" alt="Patienten-Aufträge" width="300"/>
 
 ---
 
@@ -48,7 +48,7 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Übersichtliche Struktur  
 
 **Screenshot:**  
-![Medikamente](images/medikamente.jpg)
+<img src="images/medikamente.jpg" alt="Medikamente" width="300"/>
 
 ---
 
@@ -58,7 +58,7 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Termine hinzufügen  
 
 **Screenshot:**  
-![Termine](images/termine.jpg)
+<img src="images/termine.jpg" alt="Termine" width="300"/>
 
 ---
 
@@ -70,7 +70,7 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Passwort ändern  
 
 **Screenshot:**  
-![Patientenprofil](images/patient_profil.jpg)
+<img src="images/patient_profil.jpg" alt="Patientenprofil" width="300"/>
 
 ---
 
@@ -80,8 +80,8 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 - Abmelden  
 
 **Screenshot:**  
-![Mitarbeiter-Einstellungen](images/einstellungen.jpg)
-![Patienten-Einstellungen](images/pat.einstellungen.jpg)
+<img src="images/einstellungen.jpg" alt="Mitarbeiter-Einstellungen" width="300"/>
+<img src="images/pat.einstellungen.jpg" alt="Patienten-Einstellungen" width="300"/>
 
 ---
 
@@ -101,17 +101,17 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 
 ---
 
-# 📁 Projektstruktur**
+# 📁 Projektstruktur
 
 CareConnect/
 │
-├── Views/                # Alle Screens
-├── ViewModels/           # Logik & State Management
-├── Models/               # Datenmodelle
-├── Services/             # Firebase, Location, Auth
-├── Components/           # Wiederverwendbare UI-Bausteine
-├── Resources/            # App Icons, Farben, Assets
-└── CareConnectApp.swift  # Einstiegspunkt der App
+├── Views/                # Alle Screens  
+├── ViewModels/           # Logik & State Management  
+├── Models/               # Datenmodelle  
+├── Services/             # Firebase, Location, Auth  
+├── Components/           # Wiederverwendbare UI-Bausteine  
+├── Resources/            # App Icons, Farben, Assets  
+└── CareConnectApp.swift  # Einstiegspunkt der App  
 
 ---
 
@@ -160,3 +160,4 @@ CareConnect/
 ---
 
 **CareConnect – Ihre Gesundheit in besten Händen.**
+
