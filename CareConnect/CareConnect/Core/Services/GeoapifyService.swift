@@ -19,10 +19,8 @@ struct GeoapifyResponse: Codable {
 final class GeoapifyService {
     static let shared = GeoapifyService()
 
-    // API-Key laden
-    private var apiKey: String {
-        (Bundle.main.object(forInfoDictionaryKey: "8ed690fb965e421bae4f4a99b71e58bb") as? String) ?? ""
-    }
+    // API-Key laden (aus Secrets.xcconfig)
+    private let apiKey = Secrets.geoapifyApiKey
 
     /// Adressen abrufen
     func fetchSuggestions(for query: String, countryCode: String? = nil, limit: Int = 5) async throws -> [GeoapifyPrediction] {
