@@ -2,47 +2,35 @@
 //  EmployeeWorkScheduleView.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 11.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import SwiftUI
-import Foundation
 
+/// Wochenstunden, Schicht und Arbeitstage
 struct EmployeeWorkScheduleView: View {
-    /// Profil-ViewModel
-    @EnvironmentObject var vm: EmployeeProfileViewModel
-    /// UI-Inhalt
+    let schedule: WorkSchedule
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            let schedule = vm.workSchedule
-            Text("Arbeitszeiten")
-                .font(.headline)
-                .foregroundColor(CCDesign.textPrimary)
-
-            HStack {
-                Label("\(schedule.weeklyHours) Std/Woche", systemImage: "clock")
-                Spacer()
-                Label("\(schedule.shiftStart) – \(schedule.shiftEnd)", systemImage: "clock.badge.checkmark")
-            }
-            .foregroundColor(.secondary)
-
+        SectionCard(title: tr("Arbeitszeiten"), icon: "clock") {
+            InfoRow(system: "hourglass", title: tr("Wochenstunden"), value: tr("{0} Std/Woche", schedule.weeklyHours))
+            InfoRow(system: "clock", title: tr("Schicht"), value: "\(schedule.shiftStart) – \(schedule.shiftEnd)")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(schedule.workDays, id: \.self) { day in
-                        Label(day, systemImage: "sun.max.fill")
-                            .labelStyle(.titleOnly)
-                            .font(.subheadline)
-                            .padding(.horizontal, 10)
+                        Text(tr(day))
+                            .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(CCDesign.card.opacity(0.9))
-                            .clipShape(Capsule())
+                            .background(CCDesign.accent.opacity(0.15), in: Capsule())
                     }
                 }
             }
         }
-        .padding()
-        .background(CCDesign.card.opacity(0.95))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: CCDesign.textSecondary.opacity(0.2), radius: 3, x: 0, y: 2)
     }
+}
+
+#Preview {
+    EmployeeWorkScheduleView(schedule: WorkSchedule())
+        .padding()
+        .screenBackground()
 }
