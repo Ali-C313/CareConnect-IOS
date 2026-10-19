@@ -32,8 +32,9 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 
 ## 📝 Auftragsmanagement
 - Aktuelle, offene und erledigte Aufträge  
-- Detailansicht mit Karte  
-- Live-Notruf-Bereich  
+- Detailansicht mit Live-Karte und Ankunftszeit  
+- Abschließen mit Leistungsnachweis und Unterschrift  
+- Wiederkehrende Aufträge aus Verordnungen  
 
 **Screenshot:**  
 <img src="images/auftraege.jpg" alt="Mitarbeiter-Aufträge" width="300"/>
@@ -75,8 +76,11 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 ---
 
 ## ⚙️ Einstellungen
-- Profil anzeigen  
+- Profil anzeigen und bearbeiten  
+- Organisation wechseln, verwalten oder verlassen  
+- Benachrichtigungen und Standort-Freigabe  
 - Dark Mode / Light Mode  
+- Sprache (Deutsch, Englisch, Türkisch, Arabisch, Spanisch)  
 - Abmelden  
 
 **Screenshot:**  
@@ -91,27 +95,44 @@ Die App unterstützt bei Patientenverwaltung, Medikamentenplanung, Terminen, Liv
 |--------|-------------|
 | Sprache | Swift |
 | UI Framework | SwiftUI |
-| Architektur | MVVM |
+| Architektur | MVVM mit Protokollen & Repositories |
 | Backend | Firebase Firestore |
 | Authentifizierung | Firebase Auth |
 | Storage | Firebase Storage |
+| Push | Firebase Cloud Messaging |
 | Karten | Apple Maps |
-| iOS Version | iOS 17+ |
+| iOS Version | iOS 26 |
 | IDE | Xcode 18+ |
 
 ---
 
 # 📁 Projektstruktur
 
+```
 CareConnect/
-│
-├── Views/                # Alle Screens  
-├── ViewModels/           # Logik & State Management  
-├── Models/               # Datenmodelle  
-├── Services/             # Firebase, Location, Auth  
-├── Components/           # Wiederverwendbare UI-Bausteine  
-├── Resources/            # App Icons, Farben, Assets  
-└── CareConnectApp.swift  # Einstiegspunkt der App  
+├── App/                  # Einstieg, AppDelegate, AppContainer, RootView
+├── Core/
+│   ├── Models/           # Datenmodelle (Codable, wie in Firestore), Enums/ für Status und Rollen
+│   ├── Firebase/         # FirebaseManager, Collection-Namen, Listener
+│   ├── Repositories/     # Pro Bereich: Repository (Protocol), RepositoryImpl (Firebase) und MockRepository
+│   ├── Services/         # Standort, Benachrichtigungen, Karten
+│   ├── ViewModels/       # AppStateViewModel (Sitzung + Live-Daten)
+│   ├── Extensions/       # Hilfen für String, Datum, Links
+│   ├── Localization/     # Übersetzungen
+│   └── Design/           # Farben und Stil
+├── Features/
+│   ├── Auth/             # Login & Registrierung
+│   ├── Organization/     # Organisation gründen, beitreten, verwalten
+│   ├── Employees/        # Mitarbeiter-App
+│   ├── Patients/         # Patienten-App
+│   ├── Settings/         # Gemeinsame Einstellungs-Bereiche
+│   └── Components/       # Wiederverwendbare UI-Bausteine
+└── Resources/            # Assets, Farben, GoogleService-Info.plist
+```
+
+In den Xcode-Previews laufen automatisch die Mock-Repositories mit Beispieldaten, dafür wird kein Firebase gebraucht.
+
+Die App nutzt dasselbe Firebase-Projekt wie die Android-Version (CareConnect-KMP), Daten sind also auf beiden Plattformen gleich.
 
 ---
 
@@ -143,12 +164,9 @@ CareConnect/
 
 # 🧭 Roadmap
 
-- Push-Benachrichtigungen  
-- Tourenplanung für Pflegekräfte  
 - Kalender mit Erinnerungen  
 - Exportfunktionen (PDF/CSV)  
-- Rollen- und Rechteverwaltung  
-- Unterstützung mehrerer Pflegeeinrichtungen  
+- Leistungsnachweise als PDF  
 
 ---
 
