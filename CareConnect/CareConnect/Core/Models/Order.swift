@@ -2,75 +2,56 @@
 //  Order.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 11.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import Foundation
-import SwiftUI
 import FirebaseFirestore
 
-
-/// PDF-Datei Info
-struct DocumentFile: Identifiable, Codable, Hashable {
-    var id: String = UUID().uuidString
-    var fileName: String
-}
-
-/// Auftragsdaten
+/// Auftrag, liegt unter organizations/{orgId}/orders
 struct Order: Identifiable, Codable, Hashable {
-    @DocumentID var id: String?
-    var state: OrderState
-    var notes: [String]? = []
-    var description: String
+    // Android speichert zusätzlich ein Feld "id", deshalb heißt die Dokument-ID hier anders
+    @DocumentID var documentId: String?
+    var state: OrderState = .offen
+    var notes: [String]?
+    var description: String = ""
     var patientId: String?
     var patientName: String?
-    var createdBy: String
-    var assignedTo: String?
-    /// Mitarbeiter-ID
+    /// UID von dem, der den Auftrag angelegt hat
+    var createdBy: String?
+    /// Mitarbeiter, der den Auftrag angenommen hat
     var employeeId: String?
+    /// Altes Feld aus der ersten iOS-Version
+    var assignedTo: String?
     var dueDate: Timestamp?
     var createdAt: Timestamp?
+    /// Leistungsnachweis beim Abschließen
+    var report: CompletionReport?
 
-    init(
-        id: String? = nil,
-        state: OrderState,
-        notes: [String]? = [],
-        description: String,
-        patientId: String? = nil,
-        patientName: String? = nil,
-        createdBy: String,
-        assignedTo: String? = nil,
-        employeeId: String? = nil,
-        dueDate: Timestamp? = nil,
-        createdAt: Timestamp? = nil
-    ) {
-        self.id = id
-        self.state = state
-        self.notes = notes
-        self.description = description
-        self.patientId = patientId
-        self.patientName = patientName
-        self.createdBy = createdBy
-        self.assignedTo = assignedTo
-        self.employeeId = employeeId
-        self.dueDate = dueDate
-        self.createdAt = createdAt
+    var id: String { documentId ?? "" }
+
+    /// Zuständiger Mitarbeiter (neues oder altes Feld)
+    var assignedEmployeeId: String {
+        let value = employeeId ?? ""
+        return value.isEmpty ? (assignedTo ?? "") : value
     }
 
-    enum CodingKeys: String, CodingKey {
-        case id
-        case state
-        case notes
-        case description
-        case patientId
-        case patientName
-        case createdBy
-        case assignedTo
-        case employeeId
-        case dueDate
-        case createdAt
-    }
+    var displayTitle: String { tr("Auftrag #{0}", String(id.prefix(6))) }
 
-    var isActive: Bool { state == .aktuell }
-    var displayTitle: String { "Auftrag #\((id ?? "Unbekannt").prefix(6))" }
+    var displayPatientName: String { (patientName ?? "").ifBlank(tr("Unbekannter Patient")) }
+
+    var notesText: String { (notes ?? []).joined(separator: ", ") }
+
+    static let emergencyDescription = "Notfallauftrag"
+}
+
+/// Leistungsnachweis: was gemacht wurde und Unterschrift
+struct CompletionReport: Codable, Hashable {
+    var note: String = ""
+    /// Striche als "x,y;x,y|x,y;..." mit Werten von 0 bis 1000, leer = keine Unterschrift
+    var signature: String = ""
+    var signedBy: String = ""
+    var completedAt: Timestamp?
+    var completedBy: String = ""
+    var completedByName: String = ""
 }
