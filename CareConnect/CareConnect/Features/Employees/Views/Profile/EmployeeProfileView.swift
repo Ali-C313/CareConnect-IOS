@@ -2,71 +2,74 @@
 //  EmployeeProfileView.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 11.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import SwiftUI
-import Foundation
-import MapKit
-import PDFKit
-import QuickLook
+import UniformTypeIdentifiers
 
+/// Profil eines Mitarbeiters mit Arbeitszeiten und Dokumenten
 struct EmployeeProfileView: View {
-    /// Mitarbeiter-ID
-    let employeeId: String
-    /// Profil-ViewModel
-    @StateObject private var vm = EmployeeProfileViewModel()
-    /// Importanzeige
+    @Environment(AppStateViewModel.self) private var appState
+    @State private var viewModel = EmployeeProfileViewModel()
     @State private var showImporter = false
+    @State private var documentToDelete: EmployeeDocument?
 
-    /// UI-Inhalt
+    let employeeId: String
+
+    private var employee: Employee? { appState.employee(id: employeeId) }
+
     var body: some View {
-        NavigationStack {
-            ZStack {
-                CCDesign.background.ignoresSafeArea()
+        Group {
+            if let employee {
                 ScrollView {
                     VStack(spacing: 16) {
-                        EmployeeProfileHeaderView()
-                        EmployeeWorkScheduleView()
-                        EmployeeDocumentsView(showImporter: $showImporter, employeeId: employeeId)
+                        EmployeeProfileHeaderView(employee: employee)
+                        EmployeeWorkScheduleView(schedule: employee.schedule)
+                        EmployeeDocumentsView(
+                            documents: viewModel.documents,
+                            isUploading: viewModel.isUploading,
+                            onAdd: { showImporter = true },
+                            onDelete: { documentToDelete = $0 }
+                        )
                     }
                     .padding()
                 }
-                .overlay(alignment: .top) {
-                    if vm.isLoading {
-                        ProgressView("Lade …")
-                            .padding(10)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .padding(.top, 8)
-                    }
-                }
-            }
-            .navigationTitle("Mitarbeiter")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { showImporter = true } label: {
-                        Label("Dokument hinzufügen", systemImage: "doc.badge.plus")
-                    }
-                }
-            }
-            .fileImporter(isPresented: $showImporter, allowedContentTypes: [.pdf], allowsMultipleSelection: false) { result in
-                switch result {
-                case .success(let urls):
-                    if let url = urls.first {
-                        Task { await vm.importPDF(from: url, employeeId: employeeId) }
-                    }
-                case .failure(let err):
-                    vm.errorMessage = "Import fehlgeschlagen: \(err.localizedDescription)"
-                }
-            }
-            .task { await vm.load(employeeId: employeeId) }
-            .alert("Fehler", isPresented: Binding(get: { vm.errorMessage != nil }, set: { _ in vm.errorMessage = nil })) {
-                Button("OK", role: .cancel) { }
-            } message: { Text(vm.errorMessage ?? "") }
-            .sheet(item: Binding(get: { vm.showingPDF.map { IdentifiableWrap(value: $0) } }, set: { wrap in vm.showingPDF = wrap?.value })) { wrap in
-                RemotePDFPreviewView(urlString: wrap.value.downloadURL, fileName: wrap.value.fileName)
+            } else {
+                ContentUnavailableView(
+                    tr("Mitarbeiter nicht gefunden"),
+                    systemImage: "person.crop.circle.badge.questionmark"
+                )
             }
         }
-        .environmentObject(vm) // expose vm to subviews
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .screenBackground()
+        .navigationTitle(tr("Mitarbeiter"))
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { viewModel.startListening(employeeId: employeeId) }
+        .onDisappear { viewModel.stopListening() }
+        // Nur PDFs
+        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.pdf]) { result in
+            if case .success(let url) = result {
+                viewModel.uploadPDF(from: url, employeeId: employeeId)
+            }
+        }
+        .alert(
+            tr("Dokument löschen?"),
+            isPresented: Binding(get: { documentToDelete != nil }, set: { if !$0 { documentToDelete = nil } })
+        ) {
+            Button(tr("Löschen"), role: .destructive) {
+                if let documentToDelete { viewModel.deleteDocument(documentToDelete, employeeId: employeeId) }
+            }
+            Button(tr("Abbrechen"), role: .cancel) {}
+        } message: {
+            Text(documentToDelete?.fileName ?? "")
+        }
+        .messageAlert(tr("Fehler"), message: $viewModel.errorMessage)
     }
+}
+
+#Preview {
+    NavigationStack { EmployeeProfileView(employeeId: "1") }
+        .environment(AppStateViewModel())
 }
