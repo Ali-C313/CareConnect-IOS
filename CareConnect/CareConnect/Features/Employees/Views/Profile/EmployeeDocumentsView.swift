@@ -2,93 +2,78 @@
 //  EmployeeDocumentsView.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 11.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import SwiftUI
-import Foundation
 
+/// Liste der PDF-Dokumente mit Hinzufügen und Löschen
 struct EmployeeDocumentsView: View {
-    /// Profil-ViewModel
-    @EnvironmentObject var vm: EmployeeProfileViewModel
-    /// Importanzeige
-    @Binding var showImporter: Bool
-    /// Mitarbeiter-ID
-    let employeeId: String
+    @Environment(\.openURL) private var openURL
+    let documents: [EmployeeDocument]
+    let isUploading: Bool
+    let onAdd: () -> Void
+    let onDelete: (EmployeeDocument) -> Void
 
-    /// UI-Inhalt
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        SectionCard {
             HStack {
-                Text("Dokumente")
-                    .font(.headline)
-                    .foregroundColor(CCDesign.textPrimary)
+                Text(tr("Dokumente")).font(.headline)
                 Spacer()
-                Button {
-                    showImporter = true
-                } label: {
-                    Label("Hinzufügen", systemImage: "plus")
-                }
-                .buttonStyle(.borderedProminent)
-            }
-
-            if vm.documents.isEmpty {
-                Text("Noch keine Dokumente vorhanden.")
-                    .foregroundColor(.secondary)
-                    .padding(.vertical, 12)
-            } else {
-                LazyVStack(spacing: 10) {
-                    ForEach(vm.documents) { doc in
-                        Button {
-                            vm.showingPDF = doc
-                        } label: {
-                            HStack(spacing: 10) {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(CCDesign.card.opacity(0.15))
-                                    .frame(width: 54, height: 54)
-                                    .overlay(
-                                        Image(systemName: "doc.richtext.fill")
-                                            .font(.title3)
-                                            .foregroundColor(.white.opacity(0.9))
-                                    )
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(doc.fileName)
-                                        .foregroundColor(CCDesign.textPrimary)
-                                        .lineLimit(1)
-                                    Text("Tippen zum Anzeigen")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(8)
-                            .background(CCDesign.card)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .buttonStyle(.plain)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                Task {
-                                    do {
-                                        try await vm.deleteDocument(doc, employeeId: employeeId)
-                                    } catch {
-                                        vm.errorMessage = "Fehler beim Löschen des Dokuments: \(error.localizedDescription)"
-                                    }
-                                }
-                            } label: {
-                                Label("Löschen", systemImage: "trash")
-                            }
-                        }
+                if isUploading {
+                    ProgressView()
+                } else {
+                    Button(action: onAdd) {
+                        Label(tr("Hinzufügen"), systemImage: "plus")
                     }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+            if documents.isEmpty {
+                Text(tr("Noch keine Dokumente vorhanden.")).foregroundColor(.secondary)
+            } else {
+                ForEach(documents) { document in
+                    documentRow(document)
                 }
             }
         }
-        .padding()
-        .background(CCDesign.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: Color(.separator).opacity(0.25),
-                radius: 3, x: 0, y: 2)
     }
+
+    private func documentRow(_ document: EmployeeDocument) -> some View {
+        HStack(spacing: 10) {
+            Button {
+                if let url = URL(string: document.downloadURL) { openURL(url) }
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "doc.richtext.fill")
+                        .font(.title)
+                        .foregroundColor(.red)
+                    VStack(alignment: .leading) {
+                        Text(document.fileName).lineLimit(1)
+                        Text(tr("Tippen zum Anzeigen"))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+
+            Button(role: .destructive) {
+                onDelete(document)
+            } label: {
+                Image(systemName: "trash")
+            }
+            .accessibilityLabel(tr("Löschen"))
+        }
+        .padding(8)
+        .background(CCDesign.field, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+#Preview {
+    EmployeeDocumentsView(documents: [EmployeeDocument(fileName: "Vertrag.pdf")], isUploading: false,
+                          onAdd: {}, onDelete: { _ in })
+        .padding()
+        .screenBackground()
 }
