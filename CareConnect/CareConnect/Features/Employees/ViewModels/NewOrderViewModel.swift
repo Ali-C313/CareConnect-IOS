@@ -2,50 +2,77 @@
 //  NewOrderViewModel.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 23.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import Foundation
-import Combine
 import FirebaseFirestore
 
+/// Auftrag anlegen oder bearbeiten
 @MainActor
-final class NewOrderViewModel: ObservableObject {
-    /// Patient-ID
-    @Published var patientId = ""
-    /// Notizen
-    @Published var notes = ""
-    /// Fälligkeitsdatum
-    @Published var dueDate = Date()
-    /// Speicherstatus
-    @Published var isSaving = false
-    /// Fehlermeldung
-    @Published var error: String?
+@Observable
+final class NewOrderViewModel {
+    var patientId = ""
+    var descriptionText = ""
+    var dueDate = Date()
+    var errorMessage: String?
+    private(set) var isSaving = false
 
-    private let orderRepo: OrderProtocol
+    let existingOrder: Order?
+    private let orders: OrderRepository
+    private let container: AppContainer
 
-    /// Initialisiert Repo
-    init(orderRepo: OrderProtocol? = nil) {
-        self.orderRepo = orderRepo ?? FirebaseOrderRepository()
+    init(existingOrder: Order? = nil, container: AppContainer? = nil) {
+        let container = container ?? .shared
+        self.existingOrder = existingOrder
+        self.container = container
+        self.orders = container.orders
+
+        if let order = existingOrder {
+            patientId = order.patientId ?? ""
+            descriptionText = order.description
+            dueDate = order.dueDate?.date ?? Date()
+        }
     }
 
-    /// Auftrag speichern
-    func save(creatorUID: String) async -> Bool {
-        guard !patientId.isEmpty, !notes.isEmpty else { return false }
-        isSaving = true; defer { isSaving = false }
+    var isEditing: Bool { existingOrder != nil }
+
+    var canSave: Bool { !patientId.isEmpty && !descriptionText.isBlank && !isSaving }
+
+    /// true wenn gespeichert
+    func save(patient: Patient?, creatorId: String?) async -> Bool {
+        guard let patient, let patientId = patient.id else {
+            errorMessage = tr("Fehler: Patient nicht gefunden.")
+            return false
+        }
+        isSaving = true
+        defer { isSaving = false }
+
         do {
-            let order = Order(
-                state: .offen,
-                notes: [notes],
-                description: "Auftrag",
-                patientName: "",
-                createdBy: creatorUID,
-                assignedTo: "",
-                dueDate: Timestamp(date: dueDate),
-                createdAt: Timestamp(date: Date())
-            )
-            try await orderRepo.create(order)
+            let orgId = try container.requireOrgId()
+            if let existingOrder {
+                try await orders.update(orgId: orgId, id: existingOrder.id, fields: [
+                    "patientId": patientId,
+                    "patientName": patient.name,
+                    "description": descriptionText.trimmed,
+                    "dueDate": Timestamp(date: dueDate)
+                ])
+            } else {
+                let order = Order(
+                    description: descriptionText.trimmed,
+                    patientId: patientId,
+                    patientName: patient.name,
+                    createdBy: creatorId ?? "",
+                    employeeId: "",
+                    dueDate: Timestamp(date: dueDate),
+                    createdAt: Timestamp()
+                )
+                try await orders.create(order, orgId: orgId)
+            }
             return true
-        } catch { self.error = error.localizedDescription; return false }
+        } catch {
+            errorMessage = tr("Fehler beim Speichern: {0}", error.localizedDescription)
+            return false
+        }
     }
 }
