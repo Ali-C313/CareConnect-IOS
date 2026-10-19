@@ -2,52 +2,48 @@
 //  PatientTabView.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 23.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import SwiftUI
-import Foundation
-import FirebaseAuth
 
+/// Tabs für Patienten
 struct PatientTabView: View {
-    @EnvironmentObject var appState: AppStateViewModel
-    /// Tab-Ansicht
+    enum Tab: Hashable {
+        case home, orders, medicine, appointments, settings
+    }
+
+    @State private var selectedTab: Tab = .home
+
     var body: some View {
-        TabView {
-            NavigationStack { PatientHomeView() }
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
-                }
+        TabView(selection: $selectedTab) {
+            NavigationStack {
+                PatientHomeView { selectedTab = .orders }
+            }
+            .tabItem { Label(tr("Home"), systemImage: "house.fill") }
+            .tag(Tab.home)
 
             NavigationStack { PatientOrdersView() }
-                .tabItem {
-                    Label("Aufträge", systemImage: "staroflife.fill")
-                }
+                .tabItem { Label(tr("Aufträge"), systemImage: "cross.case.fill") }
+                .tag(Tab.orders)
 
-            NavigationStack {
-                PatientMedicineView(patientId: appState.currentUser?.uid ?? "")
-            }
-                .tabItem {
-                    Label("Medizin", systemImage: "cross.case.fill")
-                }
+            NavigationStack { PatientMedicineView() }
+                .tabItem { Label(tr("Medizin"), systemImage: "pills.fill") }
+                .tag(Tab.medicine)
 
             NavigationStack { PatientAppointmentsView() }
-                .tabItem {
-                    Label("Termine", systemImage: "calendar.badge.plus")
-                }
+                .tabItem { Label(tr("Termine"), systemImage: "calendar") }
+                .tag(Tab.appointments)
 
             NavigationStack { PatientSettingsView() }
-                .tabItem {
-                    Label("Einstellungen", systemImage: "gearshape.fill")
-                }
+                .tabItem { Label(tr("Einstellungen"), systemImage: "gearshape.fill") }
+                .tag(Tab.settings)
         }
-        .accentColor(CCDesign.accent)
-        .background(CCDesign.background.ignoresSafeArea())
         .tint(CCDesign.accent)
     }
 }
 
 #Preview {
     PatientTabView()
-        .environmentObject(AppStateViewModel())
+        .environment(AppStateViewModel())
 }
