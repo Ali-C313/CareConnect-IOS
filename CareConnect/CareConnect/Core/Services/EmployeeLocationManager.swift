@@ -2,136 +2,99 @@
 //  EmployeeLocationManager.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 29.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import Foundation
 import CoreLocation
-import FirebaseFirestore
-import Combine
 
-class EmployeeLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+/// GPS des Mitarbeiters, läuft nur während ein Auftrag aktuell ist
+@Observable
+final class EmployeeLocationManager: NSObject, CLLocationManagerDelegate {
     static let shared = EmployeeLocationManager()
 
-    /// Letzter Standort
-    @Published var lastLocation: CLLocation?
-    @Published var lastUploadStatus: String?
+    private(set) var lastLocation: CLLocation?
+    private(set) var isTracking = false
 
     private let manager = CLLocationManager()
-    private var db = Firestore.firestore()
-    private var employeeId: String? = nil
-    private var orderId: String? = nil
-    private var lastUploadDate: Date?
+    private let locations: LocationRepository
+    private var employeeId: String?
+    private var orgId: String?
+    private var lastUpload: Date?
 
-    override private init() {
+    /// Mindestabstand zwischen zwei Uploads
+    private let uploadInterval: TimeInterval = 10
+
+    init(locations: LocationRepository? = nil) {
+        self.locations = locations ?? AppContainer.shared.locations
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         manager.distanceFilter = 50
-        manager.allowsBackgroundLocationUpdates = true
         manager.pausesLocationUpdatesAutomatically = true
     }
 
-    // MARK: - Aktivieren
-    /// Tracking starten
-    func startTracking(for employeeId: String, orderId: String? = nil) {
-        print("📍 Start Location Tracking: \(employeeId) with orderId: \(orderId ?? "none")")
+    func startTracking(for employeeId: String, orgId: String) {
+        guard !employeeId.isBlank else { return }
+        if isTracking && self.employeeId == employeeId && self.orgId == orgId { return }
         self.employeeId = employeeId
-        self.orderId = orderId
-        requestPermissionIfNeeded()
-        manager.allowsBackgroundLocationUpdates = true
-        manager.startUpdatingLocation()
-    }
+        self.orgId = orgId
+        lastUpload = nil
+        isTracking = true
 
-    /// Tracking stoppen
-    func stopTracking() {
-        print("🛑 Stop Location Tracking")
-        manager.allowsBackgroundLocationUpdates = false
-        manager.stopUpdatingLocation()
-        employeeId = nil
-        orderId = nil
-    }
-
-    // MARK: - Berechtigung
-    /// Berechtigung prüfen
-    func requestPermissionIfNeeded() {
-        let status = manager.authorizationStatus
-        switch status {
+        switch manager.authorizationStatus {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
-            manager.requestAlwaysAuthorization()
-        case .denied, .restricted:
-            print("⚠️ Standortzugriff wurde verweigert — bitte in den Einstellungen aktivieren.")
-        case .authorizedAlways, .authorizedWhenInUse:
-            break
-        @unknown default:
-            break
+        case .authorizedWhenInUse, .authorizedAlways:
+            beginUpdates()
+        default:
+            print("Standortzugriff verweigert")
         }
     }
 
-    // MARK: - Delegate
-    /// Berechtigungsänderung
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        switch status {
-        case .authorizedAlways, .authorizedWhenInUse:
-            print("✅ Standortzugriff erlaubt")
-            if employeeId != nil {
-                manager.startUpdatingLocation()
-            }
-        case .denied, .restricted:
-            print("❌ Kein Standortzugriff")
-            print("❌ Kein Standortzugriff — bitte Berechtigungen in den Systemeinstellungen aktivieren.")
+    func stopTracking() {
+        manager.stopUpdatingLocation()
+        manager.allowsBackgroundLocationUpdates = false
+        // Standort löschen, damit der Patient keinen alten Punkt sieht
+        if let employeeId, let orgId {
+            Task { try? await locations.clear(orgId: orgId, employeeId: employeeId) }
+        }
+        employeeId = nil
+        orgId = nil
+        isTracking = false
+    }
+
+    private func beginUpdates() {
+        manager.allowsBackgroundLocationUpdates = true
+        manager.showsBackgroundLocationIndicator = true
+        manager.startUpdatingLocation()
+    }
+
+    // MARK: - CLLocationManagerDelegate
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        guard employeeId != nil else { return }
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            beginUpdates()
         default:
             break
         }
     }
 
-    /// Standort aktualisiert
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
+        guard let location = locations.last, let employeeId, let orgId else { return }
         lastLocation = location
 
-        let now = Date()
-        if let lastUpload = lastUploadDate, now.timeIntervalSince(lastUpload) < 10 {
-            // Skip upload to respect cooldown
-            return
-        }
-        lastUploadDate = now
+        if let lastUpload, Date().timeIntervalSince(lastUpload) < uploadInterval { return }
+        lastUpload = Date()
 
-        uploadLocation(location)
+        Task {
+            try? await self.locations.upload(location.coordinate, orgId: orgId, employeeId: employeeId)
+        }
     }
 
-    /// Standortfehler
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("❌ Location error: \(error.localizedDescription)")
-        lastUploadStatus = "Location error: \(error.localizedDescription)"
-    }
-
-    // MARK: - Firestore Upload
-    /// Standort hochladen
-    private func uploadLocation(_ location: CLLocation) {
-        guard let employeeId else { return }
-        let data: [String: Any] = [
-            "lat": location.coordinate.latitude,
-            "lon": location.coordinate.longitude,
-            "updatedAt": Timestamp(date: Date())
-        ]
-
-        let documentReference: DocumentReference
-        if let orderId = orderId {
-            documentReference = db.collection("orders").document(orderId).collection("employeeLocation").document(employeeId)
-        } else {
-            documentReference = db.collection("employeeLocations").document(employeeId)
-        }
-
-        documentReference.setData(data) { error in
-            if let error = error {
-                print("❌ Fehler beim Upload der Location: \(error.localizedDescription)")
-                self.lastUploadStatus = "Upload failed: \(error.localizedDescription)"
-            } else {
-                print("📡 Standort hochgeladen: (\(location.coordinate.latitude), \(location.coordinate.longitude))")
-                self.lastUploadStatus = "Upload successful: (\(location.coordinate.latitude), \(location.coordinate.longitude))"
-            }
-        }
+        print("Standortfehler:", error.localizedDescription)
     }
 }
