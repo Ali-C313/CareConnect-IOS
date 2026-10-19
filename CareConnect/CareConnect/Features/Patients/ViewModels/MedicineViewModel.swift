@@ -2,78 +2,66 @@
 //  MedicineViewModel.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 05.11.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import Foundation
-import Combine
-import FirebaseFirestore
 
+/// Eigene Medikamente des Patienten
 @MainActor
-final class MedicineViewModel: ObservableObject {
-    private let patientId: String
+@Observable
+final class MedicineViewModel {
+    private(set) var medicines: [MedicineEntry] = []
+    var errorMessage: String?
 
-    @Published var medicines: [MedicineEntry] = []
-    @Published var showAddSheet: Bool = false
-    @Published var showEditSheet: Bool = false
-    @Published var editingMedicine: MedicineEntry?
+    private let container: AppContainer
+    private var listener: ListenerHandle?
 
-    private var db = Firestore.firestore()
-
-    init(patientId: String) {
-        self.patientId = patientId
-        if patientId.trimmingCharacters(in: .whitespaces).isEmpty {
-            print("❌ FEHLER: MedicineViewModel wurde mit leerer patientId initialisiert! Medikamente können NICHT gespeichert werden.")
-        } else {
-            print("✅ MedicineViewModel initialisiert mit patientId: \(patientId)")
-        }
-        fetchMedicines()
+    init(container: AppContainer? = nil) {
+        let container = container ?? .shared
+        self.container = container
     }
 
-    func fetchMedicines() {
-        if patientId.trimmingCharacters(in: .whitespaces).isEmpty {
-            print("❌ FEHLER: patientId ist leer – kann Medikamente NICHT laden!")
-            return
+    private var patientId: String? { container.auth.currentUserId }
+
+    func entries(for time: TimeOfDay) -> [MedicineEntry] {
+        medicines.filter { $0.timeOfDay == time }
+    }
+
+    func startListening() {
+        guard listener == nil, let patientId, let orgId = container.currentOrgId else { return }
+        listener = container.medicines.listen(orgId: orgId, patientId: patientId) { [weak self] list in
+            self?.medicines = list
         }
-        db.collection("patients")
-            .document(patientId)
-            .collection("medicines")
-            .addSnapshotListener { querySnapshot, error in
-                guard let documents = querySnapshot?.documents else {
-                    print("Keine Medikamente gefunden.")
-                    return
-                }
-                self.medicines = documents.compactMap { document in
-                    try? document.data(as: MedicineEntry.self)
-                }
+    }
+
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+    }
+
+    func addMedicine(name: String, dosage: String, timeOfDay: TimeOfDay) {
+        guard let patientId else { return }
+        let entry = MedicineEntry(name: name.trimmed, dosage: dosage.trimmed, timeOfDay: timeOfDay)
+        Task {
+            do {
+                let orgId = try container.requireOrgId()
+                try await container.medicines.add(entry, orgId: orgId, patientId: patientId)
+            } catch {
+                errorMessage = tr("Fehler beim Speichern: {0}", error.localizedDescription)
             }
-    }
-
-    func addMedicine(_ medicine: MedicineEntry) {
-        if patientId.trimmingCharacters(in: .whitespaces).isEmpty {
-            print("❌ FEHLER: patientId ist leer – Medikament wird NICHT gespeichert!")
-            return
-        }
-        do {
-            _ = try db.collection("patients")
-                .document(patientId)
-                .collection("medicines")
-                .addDocument(from: medicine)
-        } catch {
-            print("Fehler beim Hinzufügen: \(error.localizedDescription)")
         }
     }
 
     func deleteMedicine(_ medicine: MedicineEntry) {
-        guard let id = medicine.id else { return }
-        db.collection("patients")
-            .document(patientId)
-            .collection("medicines")
-            .document(id)
-            .delete { error in
-                if let error = error {
-                    print("Fehler beim Löschen: \(error.localizedDescription)")
-                }
+        guard let patientId, let id = medicine.id else { return }
+        Task {
+            do {
+                let orgId = try container.requireOrgId()
+                try await container.medicines.delete(id: id, orgId: orgId, patientId: patientId)
+            } catch {
+                errorMessage = tr("Löschen fehlgeschlagen: {0}", error.localizedDescription)
             }
+        }
     }
 }
