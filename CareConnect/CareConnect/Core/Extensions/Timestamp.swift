@@ -2,46 +2,58 @@
 //  Timestamp.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 06.11.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import Foundation
 import FirebaseFirestore
 
-// MARK: - Display helpers for Firestore Timestamp
 extension Timestamp {
-    /// The `Date` representation of this Firestore timestamp.
-    var date: Date { self.dateValue() }
+    var date: Date { dateValue() }
 
-    /// Formats the timestamp using a shared DateFormatter (default: "dd.MM.yyyy", de_DE).
+    /// z. B. 24.12.2025
+    var formattedDate: String { date.formattedDate }
+
+    /// z. B. 24.12.2025, 14:30
+    var formattedDateTime: String { date.formattedDateTime }
+
+    /// Alter in Jahren, wenn das ein Geburtsdatum ist
+    var ageYears: Int {
+        Calendar.current.dateComponents([.year], from: date, to: Date()).year ?? 0
+    }
+}
+
+extension Date {
+    var timestamp: Timestamp { Timestamp(date: self) }
+
+    /// z. B. 24.12.2025
     var formattedDate: String {
-        Self.displayDateFormatter.string(from: date)
+        formatted(.dateTime.day(.twoDigits).month(.twoDigits).year().locale(Locale(identifier: "de_DE")))
     }
 
-    /// Formats the timestamp with a custom format string, e.g. "dd.MM.yyyy, HH:mm"
-    func formatted(_ format: String) -> String {
-        Self.makeFormatter(format: format).string(from: date)
+    /// z. B. 14:30
+    var formattedTime: String {
+        formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).locale(Locale(identifier: "de_DE")))
     }
 
-    /// Age in full years computed from this birth date to today.
-    var ageYears: Int? {
-        Calendar.current.dateComponents([.year], from: date, to: Date()).year
+    /// z. B. 24.12.2025, 14:30
+    var formattedDateTime: String { "\(formattedDate), \(formattedTime)" }
+
+    /// Mittag, damit sich ein reines Datum durch Zeitzonen nicht verschiebt
+    var atNoon: Date {
+        Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: self) ?? self
     }
+}
 
-    // MARK: - Private formatters
-    private static let displayDateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "de_DE")
-        df.calendar = Calendar(identifier: .gregorian)
-        df.dateFormat = "dd.MM.yyyy"
-        return df
-    }()
-
-    private static func makeFormatter(format: String) -> DateFormatter {
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "de_DE")
-        df.calendar = Calendar(identifier: .gregorian)
-        df.dateFormat = format
-        return df
+/// Termine für wiederkehrende Aufträge
+/// - Parameter weekdays: 1 = Montag bis 7 = Sonntag
+/// - Returns: Zeitpunkte ab start (gleiche Uhrzeit) an den gewählten Wochentagen
+func recurringDates(start: Date, weekdays: Set<Int>, weeks: Int) -> [Date] {
+    let calendar = Calendar.current
+    return (0..<(weeks * 7)).compactMap { offset in
+        guard let date = calendar.date(byAdding: .day, value: offset, to: start) else { return nil }
+        // Calendar zählt ab Sonntag = 1, umrechnen auf Montag = 1
+        let weekday = (calendar.component(.weekday, from: date) + 5) % 7 + 1
+        return weekdays.contains(weekday) ? date : nil
     }
 }
