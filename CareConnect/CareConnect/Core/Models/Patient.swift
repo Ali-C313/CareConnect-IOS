@@ -2,36 +2,44 @@
 //  Patient.swift
 //  CareConnect
 //
-//  Created by Ali Chehab on 11.10.25.
+//  Created by Ali Chehab on 18.10.26.
 //
 
 import Foundation
 import FirebaseFirestore
 
-/// Medikament Info
+/// Medikament aus der alten Kurzliste am Patienten
 struct Medication: Identifiable, Codable, Hashable {
-    var id: String = UUID().uuidString
-    var name: String
+    var id: String?
+    var name: String = ""
 }
 
 /// Notfallkontakt
-struct EmergencyContact: Identifiable, Codable, Hashable {
-    @DocumentID var id: String?
-    var name: String
-    var relation: String?
-    var phone: String?
-    var email: String?
-    var address: String?
+struct EmergencyContact: Codable, Hashable {
+    var name: String = ""
+    var relation: String = ""
+    var phone: String = ""
+    var email: String = ""
+    var address: String = ""
     var age: Int?
 }
 
-/// Patientendaten
+/// Pflegedienst, an den eine Praxis Verordnungen schicken darf
+struct LinkedOrg: Identifiable, Codable, Hashable {
+    var orgId: String
+    var orgName: String = ""
+
+    var id: String { orgId }
+}
+
+/// Patient einer Organisation, Feldnamen wie in der Android-App
 struct Patient: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
     var uid: String?
     var firstName: String?
     var lastName: String?
     var address: String?
+    var city: String?
     var phone: String?
     var email: String?
     var allergies: String?
@@ -40,23 +48,30 @@ struct Patient: Identifiable, Codable, Hashable {
     var birthDate: Timestamp?
     var notes: String?
     var profileImageURL: String?
+    var medications: [Medication]?
+    var history: [String]?
+    var emergencyContact: EmergencyContact?
+    var createdAt: Timestamp?
+    var linkedOrgIds: [String]?
+    var linkedOrgs: [LinkedOrg]?
 
-    
-    /// Medikamente
-    var medications: [Medication]? = []
-    /// Krankengeschichte
-    var history: [String]? = []
-    /// Notfallkontakt Info
-    var emergencyContact: EmergencyContact? = nil
-
-    
+    /// Vor- und Nachname, sonst E-Mail
     var name: String {
-        let first = (firstName ?? "").trimmingCharacters(in: .whitespaces)
-        let last  = (lastName  ?? "").trimmingCharacters(in: .whitespaces)
-        let full  = [first, last].filter { !$0.isEmpty }.joined(separator: " ")
+        let full = [firstName, lastName]
+            .compactMap { $0?.trimmed }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
         if !full.isEmpty { return full }
-        return email ?? "Unbekannt"
+        return (email ?? "").ifBlank(tr("Unbekannt"))
     }
 
-    var city: String?
+    var initials: String { name.initials }
+
+    /// Adresse + Stadt in einer Zeile, leer wenn nichts da ist
+    var fullAddress: String {
+        [address, city]
+            .compactMap { $0?.trimmed }
+            .filter { !$0.isEmpty }
+            .joined(separator: ", ")
+    }
 }
