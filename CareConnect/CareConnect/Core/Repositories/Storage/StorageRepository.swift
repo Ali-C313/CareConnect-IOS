@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Dateien hochladen und löschen
 protocol StorageRepository {
     /// Lädt die Datei hoch und gibt die Download-URL zurück
     func upload(data: Data, path: String, contentType: String) async throws -> String
