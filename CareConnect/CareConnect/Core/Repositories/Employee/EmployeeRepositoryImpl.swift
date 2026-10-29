@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Mitarbeiter und Dokumente in Firestore und Storage
 final class EmployeeRepositoryImpl: EmployeeRepository {
     private let storage: StorageRepository
 
@@ -27,10 +28,6 @@ final class EmployeeRepositoryImpl: EmployeeRepository {
         ref(orgId).listen(as: Employee.self) { employees in
             onChange(employees.sorted { $0.name < $1.name })
         }
-    }
-
-    func listen(orgId: String, id: String, onChange: @escaping (Employee?) -> Void) -> ListenerHandle {
-        ref(orgId).document(id).listen(as: Employee.self, onChange: onChange)
     }
 
     func updateStatus(orgId: String, id: String, status: StaffStatus) async throws {
