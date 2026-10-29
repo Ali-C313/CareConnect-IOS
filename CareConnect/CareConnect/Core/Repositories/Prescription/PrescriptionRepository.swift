@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Verordnungen zwischen Praxis und Pflegedienst
 protocol PrescriptionRepository {
     /// Eingehende und ausgehende Verordnungen der Organisation
     func listenAll(orgId: String, onChange: @escaping ([Prescription]) -> Void) -> ListenerHandle
