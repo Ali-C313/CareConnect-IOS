@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Aufträge in Firestore (organizations/{id}/orders)
 final class OrderRepositoryImpl: OrderRepository {
     private var database: Firestore { FirebaseManager.shared.database }
 
@@ -24,10 +25,6 @@ final class OrderRepositoryImpl: OrderRepository {
         ref(orgId).listen(as: Order.self) { [weak self] orders in
             onChange(self?.sorted(orders) ?? orders)
         }
-    }
-
-    func listen(orgId: String, id: String, onChange: @escaping (Order?) -> Void) -> ListenerHandle {
-        ref(orgId).document(id).listen(as: Order.self, onChange: onChange)
     }
 
     func listen(orgId: String, patientId: String, onChange: @escaping ([Order]) -> Void) -> ListenerHandle {
