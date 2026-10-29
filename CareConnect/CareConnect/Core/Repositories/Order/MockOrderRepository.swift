@@ -16,11 +16,6 @@ final class MockOrderRepository: OrderRepository {
         return MockListener()
     }
 
-    func listen(orgId: String, id: String, onChange: @escaping (Order?) -> Void) -> ListenerHandle {
-        onChange(orders.first { $0.id == id })
-        return MockListener()
-    }
-
     func listen(orgId: String, patientId: String, onChange: @escaping ([Order]) -> Void) -> ListenerHandle {
         onChange(orders.filter { $0.patientId == patientId })
         return MockListener()
