@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Organisationen in Firestore
 final class OrganizationRepositoryImpl: OrganizationRepository {
     private var database: Firestore { FirebaseManager.shared.database }
 
