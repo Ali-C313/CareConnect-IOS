@@ -7,13 +7,13 @@
 
 import SwiftUI
 
+/// Farben und Stil der App an einer Stelle
 enum CCDesign {
     // MARK: - Farben (Color Assets im Ordner CC)
     static let background = Color("Background")
     static let card = Color("Card")
     static let accent = Color("Accent")
     static let info = Color("Info")
-    static let danger = Color("Danger")
     static let textPrimary = Color("TextPrimary")
     static let textSecondary = Color("TextSecondary")
     /// Hintergrund für Eingabefelder und Listenzeilen
@@ -21,8 +21,6 @@ enum CCDesign {
 
     // MARK: - Layout
     static let radius: CGFloat = 16
-    static let outerSpacing: CGFloat = 16
-    static let innerSpacing: CGFloat = 12
 
     // MARK: - Kartenstil
     static func cardStyle() -> some View {
@@ -32,6 +30,7 @@ enum CCDesign {
     }
 }
 
+/// Gemeinsame Modifier für alle Screens
 extension View {
     /// Standard-Hintergrund für alle Screens
     func screenBackground() -> some View {
