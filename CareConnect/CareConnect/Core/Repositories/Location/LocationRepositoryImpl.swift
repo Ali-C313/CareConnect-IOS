@@ -9,6 +9,7 @@ import Foundation
 import FirebaseFirestore
 import CoreLocation
 
+/// Live-Standorte in Firestore (employeeLocations)
 final class LocationRepositoryImpl: LocationRepository {
     private func ref(_ orgId: String) -> CollectionReference {
         FirebaseManager.shared.database.org(orgId).collection(CollectionNames.employeeLocations)
