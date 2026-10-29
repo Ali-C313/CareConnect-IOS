@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Logik für den Login
 @MainActor
 @Observable
 final class LoginViewModel {
