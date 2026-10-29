@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Entfernung und Fahrzeit für die Karte
 extension Double {
     /// 3400.0 → "3,4 km"
     var kmString: String {
