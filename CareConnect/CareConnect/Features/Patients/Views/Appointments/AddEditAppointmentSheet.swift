@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import FirebaseFirestore
 
 /// Termin anlegen oder bearbeiten
 struct AddEditAppointmentSheet: View {
@@ -102,7 +101,7 @@ struct AddEditAppointmentSheet: View {
         var entry = appointment ?? AppointmentEntry()
         entry.what = what.trimmed
         entry.address = address.trimmed
-        entry.date = Timestamp(date: date)
+        entry.date = date.timestamp
         entry.bringItems = bringItems
         entry.notes = notes.trimmed
         onSave(entry)
