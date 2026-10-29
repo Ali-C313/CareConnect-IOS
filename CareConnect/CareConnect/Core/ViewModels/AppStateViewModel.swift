@@ -355,6 +355,7 @@ final class AppStateViewModel {
     }
 }
 
+/// Sprache beim Start
 extension AppLanguage {
     /// Gespeicherte Sprache, sonst die vom iPhone
     static var savedOrDevice: AppLanguage {
