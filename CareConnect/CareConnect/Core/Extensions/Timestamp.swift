@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Firestore-Datum als Text
 extension Timestamp {
     var date: Date { dateValue() }
 
@@ -23,6 +24,7 @@ extension Timestamp {
     }
 }
 
+/// Datum formatieren wie in der Android-App
 extension Date {
     var timestamp: Timestamp { Timestamp(date: self) }
 
