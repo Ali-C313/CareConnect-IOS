@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Medikamente eines Patienten
 protocol MedicineRepository {
     func listen(orgId: String, patientId: String, onChange: @escaping ([MedicineEntry]) -> Void) -> ListenerHandle
     func add(_ medicine: MedicineEntry, orgId: String, patientId: String) async throws
