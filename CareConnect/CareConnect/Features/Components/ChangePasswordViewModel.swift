@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Logik zum Passwort ändern
 @MainActor
 @Observable
 final class ChangePasswordViewModel {
