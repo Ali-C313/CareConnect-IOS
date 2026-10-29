@@ -29,6 +29,7 @@ enum CollectionNames {
     static let prescriptions = "prescriptions"
 }
 
+/// Kurzer Weg zu einer Organisation
 extension Firestore {
     /// organizations/{orgId}
     func org(_ orgId: String) -> DocumentReference {
