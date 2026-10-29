@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Registrierung mit Profilbild und Adresse
 struct RegisterView: View {
     @State private var viewModel = RegisterViewModel()
 
