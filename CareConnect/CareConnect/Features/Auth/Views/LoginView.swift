@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Login mit E-Mail und Passwort
 struct LoginView: View {
     @State private var viewModel = LoginViewModel()
 
