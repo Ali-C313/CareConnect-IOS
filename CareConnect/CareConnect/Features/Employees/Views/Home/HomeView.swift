@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Home-Screen für Mitarbeiter mit Status, Statistik, Tour und Team
 struct HomeView: View {
     @Environment(AppStateViewModel.self) private var appState
     @Environment(\.openURL) private var openURL
