@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Termine eines Patienten
 protocol AppointmentRepository {
     func listen(orgId: String, patientId: String, onChange: @escaping ([AppointmentEntry]) -> Void) -> ListenerHandle
     /// Ohne ID wird ein neuer Termin angelegt, sonst überschrieben
