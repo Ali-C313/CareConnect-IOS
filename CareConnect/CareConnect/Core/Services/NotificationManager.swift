@@ -14,12 +14,6 @@ final class NotificationManager {
 
     private let center = UNUserNotificationCenter.current()
 
-    func requestPermission() {
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-            print("Benachrichtigungen erlaubt:", granted)
-        }
-    }
-
     func show(id: String, title: String, text: String) {
         let content = UNMutableNotificationContent()
         content.title = title
