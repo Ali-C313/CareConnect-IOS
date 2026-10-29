@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Organisationen, Mitglieder, Einladungen und Beitrittsanfragen
 protocol OrganizationRepository {
     // Mitgliedschaften
     func listenMemberships(uid: String, onChange: @escaping ([Membership]) -> Void) -> ListenerHandle
