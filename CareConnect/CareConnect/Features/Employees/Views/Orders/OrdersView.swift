@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Auftragsliste mit Filter nach Status
 struct OrdersView: View {
     @Environment(AppStateViewModel.self) private var appState
     private let tracker = EmployeeLocationManager.shared
