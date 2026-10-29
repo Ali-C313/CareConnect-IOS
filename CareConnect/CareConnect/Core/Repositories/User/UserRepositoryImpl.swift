@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Benutzerprofile in Firestore (users)
 final class UserRepositoryImpl: UserRepository {
     private var ref: CollectionReference { FirebaseManager.shared.database.collection(CollectionNames.users) }
 
