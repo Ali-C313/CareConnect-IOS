@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Details zu einem Auftrag mit Live-Karte und Aktionen
 struct OrderDetailView: View {
     @Environment(AppStateViewModel.self) private var appState
     @Environment(\.dismiss) private var dismiss
