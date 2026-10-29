@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseCore
 
+/// Einstieg der App, startet Firebase und gibt das AppStateViewModel an alle Views weiter
 @main
 struct CareConnectApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
