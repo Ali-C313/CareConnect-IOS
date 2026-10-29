@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Kleine Hilfen für Texte
 extension String {
     /// "Ali Chehab" → "AC"
     var initials: String {
