@@ -9,6 +9,7 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
+/// Login über Firebase Auth
 final class AuthRepositoryImpl: AuthRepository {
     private var auth: Auth { FirebaseManager.shared.auth }
 
