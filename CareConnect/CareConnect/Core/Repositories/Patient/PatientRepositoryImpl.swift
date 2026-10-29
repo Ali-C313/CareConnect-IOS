@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Patienten in Firestore (organizations/{id}/patients)
 final class PatientRepositoryImpl: PatientRepository {
     private func ref(_ orgId: String) -> CollectionReference {
         FirebaseManager.shared.database.org(orgId).collection(CollectionNames.patients)
