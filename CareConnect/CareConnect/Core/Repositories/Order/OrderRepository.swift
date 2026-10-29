@@ -7,10 +7,10 @@
 
 import Foundation
 
+/// Aufträge einer Organisation
 protocol OrderRepository {
     /// Alle Aufträge live, neueste zuerst
     func listenAll(orgId: String, onChange: @escaping ([Order]) -> Void) -> ListenerHandle
-    func listen(orgId: String, id: String, onChange: @escaping (Order?) -> Void) -> ListenerHandle
     /// Aufträge eines Patienten live
     func listen(orgId: String, patientId: String, onChange: @escaping ([Order]) -> Void) -> ListenerHandle
     func create(_ order: Order, orgId: String) async throws
