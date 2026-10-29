@@ -10,7 +10,6 @@ import Foundation
 /// Mitarbeiter einer Organisation
 protocol EmployeeRepository {
     func listenAll(orgId: String, onChange: @escaping ([Employee]) -> Void) -> ListenerHandle
-    func listen(orgId: String, id: String, onChange: @escaping (Employee?) -> Void) -> ListenerHandle
     func updateStatus(orgId: String, id: String, status: StaffStatus) async throws
     func updateProfile(orgId: String, id: String, fields: [String: Any]) async throws
 
