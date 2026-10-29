@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseStorage
 
+/// Dateien in Firebase Storage
 final class StorageRepositoryImpl: StorageRepository {
     private var storage: Storage { FirebaseManager.shared.storage }
 
