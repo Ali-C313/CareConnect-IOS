@@ -17,11 +17,6 @@ final class MockEmployeeRepository: EmployeeRepository {
         return MockListener()
     }
 
-    func listen(orgId: String, id: String, onChange: @escaping (Employee?) -> Void) -> ListenerHandle {
-        onChange(employees.first { $0.id == id })
-        return MockListener()
-    }
-
     func updateStatus(orgId: String, id: String, status: StaffStatus) async throws {
         guard let index = employees.firstIndex(where: { $0.id == id }) else { return }
         employees[index].status = status
