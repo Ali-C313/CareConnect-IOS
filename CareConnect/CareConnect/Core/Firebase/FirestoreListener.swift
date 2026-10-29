@@ -22,6 +22,7 @@ final class FirestoreListener: ListenerHandle {
     }
 }
 
+/// Live-Listener für eine ganze Collection
 extension Query {
     /// Live-Liste, kaputte Dokumente werden übersprungen
     func listen<T: Decodable>(as type: T.Type, onChange: @escaping ([T]) -> Void) -> ListenerHandle {
@@ -45,6 +46,7 @@ extension Query {
     }
 }
 
+/// Live-Listener für ein einzelnes Dokument
 extension DocumentReference {
     /// Ein Dokument live, nil wenn es nicht existiert
     /// - Parameter ignoreErrors: true = bei Fehlern nichts melden (z. B. Mitgliedsrolle)
