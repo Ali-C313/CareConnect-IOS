@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Verordnungen in Firestore, liegen bei beiden Organisationen
 final class PrescriptionRepositoryImpl: PrescriptionRepository {
     private var database: Firestore { FirebaseManager.shared.database }
 
