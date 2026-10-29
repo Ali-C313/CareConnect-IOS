@@ -13,7 +13,6 @@ import CoreLocation
 final class EmployeeLocationManager: NSObject, CLLocationManagerDelegate {
     static let shared = EmployeeLocationManager()
 
-    private(set) var lastLocation: CLLocation?
     private(set) var isTracking = false
 
     private let manager = CLLocationManager()
@@ -84,7 +83,6 @@ final class EmployeeLocationManager: NSObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last, let employeeId, let orgId else { return }
-        lastLocation = location
 
         if let lastUpload, Date().timeIntervalSince(lastUpload) < uploadInterval { return }
         lastUpload = Date()
