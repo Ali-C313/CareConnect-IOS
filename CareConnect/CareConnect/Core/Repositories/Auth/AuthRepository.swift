@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Login, Registrierung und Passwort
 protocol AuthRepository {
     var currentUserId: String? { get }
     var currentEmail: String? { get }
